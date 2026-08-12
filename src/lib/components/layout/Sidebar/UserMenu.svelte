@@ -39,6 +39,19 @@
 	export let show = false;
 	export let role = '';
 
+	// adverserial: live plan status from the billing service for the Billing menu item
+	let billing: { plan?: string; used_today?: number; quota_daily?: number; wallet_usd?: number } = {};
+	const BILLING_BASE = 'https://billing.adverserial.ai';
+	async function loadBilling() {
+		try {
+			const r = await fetch(`${BILLING_BASE}/account/status`, {
+				headers: { Authorization: `Bearer ${localStorage.token}` }
+			});
+			if (r.ok) billing = await r.json();
+		} catch (e) {}
+	}
+	$: if ($user?.email) loadBilling();
+
 	export let profile = false;
 	export let help = false;
 
@@ -159,6 +172,29 @@
 							</Tooltip>
 						{/if}
 					</button>
+
+					<a
+						href="https://billing.adverserial.ai/account"
+						target="_blank"
+						rel="noopener"
+						draggable="false"
+						class="flex h-[1.6875rem] items-center gap-2 rounded-xl px-2 text-xs w-full hover:bg-gray-50/40 dark:hover:bg-gray-800/40 transition cursor-pointer select-none text-left"
+						on:click={() => {
+							show = false;
+						}}
+					>
+						<div class="self-center shrink-0 size-4.5 flex items-center justify-center text-[#35e0ff]">◆</div>
+						<div class="self-center min-w-0 flex-1 truncate">Billing</div>
+						{#if billing.plan === 'hacker-manifesto'}
+							<span
+								class="ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-mono"
+								style="background:rgba(53,224,255,.12);color:#35e0ff;border:1px solid rgba(53,224,255,.35)"
+								>HACKER MANIFESTO</span
+							>
+						{:else}
+							<span class="ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-mono text-gray-500 border border-gray-600">FREE</span>
+						{/if}
+					</a>
 				</div>
 			{/if}
 
