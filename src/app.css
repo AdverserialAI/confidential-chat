@@ -12,6 +12,12 @@
 	font-display: swap;
 }
 
+@font-face {
+	font-family: 'JetBrains Mono';
+	src: url('/assets/fonts/JetBrainsMono-Variable.ttf');
+	font-display: swap;
+}
+
 /* --app-text-scale is updated via the UI Scale slider (Interface.svelte) */
 :root {
 	--app-text-scale: 1;
@@ -148,8 +154,8 @@ li p {
 
 /* Dark theme scrollbar styles */
 .dark ::-webkit-scrollbar-thumb {
-	background-color: rgba(67, 67, 67, 0.6); /* Darker color for dark theme */
-	border-color: rgba(0, 0, 0, var(--tw-border-opacity));
+	background-color: rgba(53, 224, 255, 0.22); /* Adverserial cyan tint */
+	border-color: rgba(4, 9, 13, var(--tw-border-opacity));
 }
 
 ::-webkit-scrollbar {
@@ -727,8 +733,8 @@ body {
 }
 
 .dark body {
-	background: #171717;
-	color: #eee;
+	background: #04090d;
+	color: #9fd8e8;
 }
 
 /* Position the handle relative to each LI */

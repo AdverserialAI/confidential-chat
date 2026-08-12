@@ -49,7 +49,7 @@
 			/>
 		</div>
 
-		<video
+		<!-- <video
 			bind:this={videoElement}
 			class="absolute inset-0 h-full w-full object-cover"
 			src="/assets/welcome.mp4"
@@ -60,7 +60,7 @@
 			preload="auto"
 			poster="/assets/welcome.webp"
 			aria-hidden="true"
-		></video>
+		></video> -->
 
 		<div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
 		<div class="absolute inset-0 bg-linear-to-r from-black/50 via-black/10 to-transparent"></div>
@@ -69,7 +69,7 @@
 			<div class="flex w-full flex-col justify-end px-6 pb-8 sm:px-10 sm:pb-10 lg:px-16 lg:pb-14">
 				<div class="max-w-3xl">
 					<div class="mb-4 text-[11px] font-medium tracking-[0.18em] uppercase opacity-35">
-						Open WebUI
+						CyberKimi
 					</div>
 
 					<h1 class="m-0 max-w-3xl text-2xl leading-[1.15] font-light tracking-tight lg:text-4xl">
