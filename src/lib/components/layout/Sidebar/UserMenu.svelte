@@ -174,13 +174,27 @@
 					</button>
 
 					<a
-						href="https://billing.adverserial.ai/account"
+						href="https://billing.adverserial.ai/account/session"
 						target="_blank"
 						rel="noopener"
 						draggable="false"
 						class="flex h-[1.6875rem] items-center gap-2 rounded-xl px-2 text-xs w-full hover:bg-gray-50/40 dark:hover:bg-gray-800/40 transition cursor-pointer select-none text-left"
-						on:click={() => {
+						on:click={(e) => {
+							e.preventDefault();
 							show = false;
+							// session handoff: POST the platform JWT in the body (keeps it out of URLs/logs)
+							const form = document.createElement('form');
+							form.method = 'POST';
+							form.action = 'https://billing.adverserial.ai/account/session';
+							form.target = '_blank';
+							const input = document.createElement('input');
+							input.type = 'hidden';
+							input.name = 'owui_token';
+							input.value = localStorage.token;
+							form.appendChild(input);
+							document.body.appendChild(form);
+							form.submit();
+							document.body.removeChild(form);
 						}}
 					>
 						<div class="self-center shrink-0 size-4.5 flex items-center justify-center text-[#35e0ff]">◆</div>
