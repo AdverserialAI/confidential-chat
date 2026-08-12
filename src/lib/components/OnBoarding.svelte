@@ -49,7 +49,7 @@
 			/>
 		</div>
 
-		<!-- <video
+		<video
 			bind:this={videoElement}
 			class="absolute inset-0 h-full w-full object-cover"
 			src="/assets/welcome.mp4"
@@ -60,7 +60,7 @@
 			preload="auto"
 			poster="/assets/welcome.webp"
 			aria-hidden="true"
-		></video> -->
+		></video>
 
 		<div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
 		<div class="absolute inset-0 bg-linear-to-r from-black/50 via-black/10 to-transparent"></div>
