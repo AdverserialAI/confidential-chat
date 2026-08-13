@@ -400,11 +400,7 @@
 												disabled={submitting}
 											>
 												<div class="self-center">
-													{mode === 'signin'
-														? $i18n.t('Sign in')
-														: ($config?.onboarding ?? false)
-															? $i18n.t('Create Admin Account')
-															: $i18n.t('Create Account')}
+													{mode === 'signin' ? $i18n.t('Sign in') : $i18n.t('Create Account')}
 												</div>
 
 												{#if submitting}
@@ -414,7 +410,7 @@
 												{/if}
 											</button>
 
-											{#if $config?.features.enable_signup && !($config?.onboarding ?? false)}
+											{#if $config?.features.enable_signup}
 												<div class=" mt-4 text-sm text-center">
 													{mode === 'signin'
 														? $i18n.t("Don't have an account?")

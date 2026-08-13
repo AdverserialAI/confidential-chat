@@ -83,8 +83,8 @@ ENV OPENAI_API_KEY="" \
     DO_NOT_TRACK=true \
     ANONYMIZED_TELEMETRY=false
 
-## Adverserial branding: backend renders this as "CyberKimi (Open WebUI)",
-## keeping the upstream attribution required by the Open WebUI license ##
+## Adverserial branding: rendered as "CyberKimi" everywhere (env.py drops the
+## upstream "(Open WebUI)" suffix) ##
 ENV WEBUI_NAME="CyberKimi"
 
 #### Other models #########################################################
