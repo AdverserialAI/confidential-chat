@@ -1467,24 +1467,12 @@ async def _check_api_key_permission(request: Request, user, db: AsyncSession):
 async def generate_api_key(
     request: Request, user=Depends(get_current_user), db: AsyncSession = Depends(get_async_session)
 ):
-    await _check_api_key_permission(request, user, db)
-
-    api_key = create_api_key()
-    success = await Users.update_user_api_key_by_id(user.id, api_key, db=db)
-
-    if success:
-        await publish_event(
-            request,
-            EVENTS.AUTH_API_KEY_CREATED,
-            actor=user,
-            subject_id=user.id,
-            subject_type='user',
-        )
-        return {
-            'api_key': api_key,
-        }
-    else:
-        raise HTTPException(500, detail=ERROR_MESSAGES.CREATE_API_KEY_ERROR)
+    # adverserial: key management lives on the billing account page — the
+    # in-app create/delete/get endpoints are disabled (key AUTH still works).
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail='API keys are managed at https://billing.adverserial.ai/account',
+    )
 
 
 # delete api key
@@ -1492,30 +1480,21 @@ async def generate_api_key(
 async def delete_api_key(
     request: Request, user=Depends(get_current_user), db: AsyncSession = Depends(get_async_session)
 ):
-    await _check_api_key_permission(request, user, db)
-    success = await Users.delete_user_api_key_by_id(user.id, db=db)
-    if success:
-        await publish_event(
-            request,
-            EVENTS.AUTH_API_KEY_DELETED,
-            actor=user,
-            subject_id=user.id,
-            subject_type='user',
-        )
-    return success
+    # adverserial: see generate_api_key above.
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail='API keys are managed at https://billing.adverserial.ai/account',
+    )
 
 
 # get api key
 @router.get('/api_key', response_model=ApiKey)
 async def get_api_key(request: Request, user=Depends(get_current_user), db: AsyncSession = Depends(get_async_session)):
-    await _check_api_key_permission(request, user, db)
-    api_key = await Users.get_user_api_key_by_id(user.id, db=db)
-    if api_key:
-        return {
-            'api_key': api_key,
-        }
-    else:
-        raise HTTPException(404, detail=ERROR_MESSAGES.API_KEY_NOT_FOUND)
+    # adverserial: see generate_api_key above.
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail='API keys are managed at https://billing.adverserial.ai/account',
+    )
 
 
 ############################
