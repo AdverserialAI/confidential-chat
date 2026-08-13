@@ -31,6 +31,7 @@ Reference: https://www.starlette.io/middleware/#limitations
 from __future__ import annotations
 
 import logging
+import os
 import re
 import time
 from urllib.parse import parse_qs, urlencode
@@ -291,3 +292,41 @@ def _scope_headers(scope: Scope) -> dict[str, str]:
         else:
             decoded[key] = value
     return decoded
+
+
+# adverserial: the chat UI lives on chat.adverserial.ai only;
+# platform.adverserial.ai serves API/auth paths and redirects browsers.
+CHAT_DOMAIN = os.getenv('CHAT_DOMAIN', 'chat.adverserial.ai')
+PLATFORM_DOMAIN = os.getenv('PLATFORM_DOMAIN', 'platform.adverserial.ai')
+
+
+class ChatDomainSplitMiddleware:
+    """Redirect browser traffic on PLATFORM_DOMAIN to CHAT_DOMAIN.
+
+    API/auth paths stay put so existing integrations using
+    https://platform.adverserial.ai/api (docs, keys, OAuth) keep working;
+    everything else — the SPA, /auth, static assets — gets a 308 to the
+    chat host.
+    """
+
+    API_PREFIXES = ('/api', '/oauth', '/v1', '/ws', '/socket.io', '/health')
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope['type'] != 'http' or not CHAT_DOMAIN or not PLATFORM_DOMAIN:
+            await self.app(scope, receive, send)
+            return
+        host = _scope_headers(scope).get('host', '').split(':')[0].strip().lower()
+        if host != PLATFORM_DOMAIN:
+            await self.app(scope, receive, send)
+            return
+        path = scope.get('path', '') or '/'
+        if path.startswith(self.API_PREFIXES):
+            await self.app(scope, receive, send)
+            return
+        query = scope.get('query_string', b'').decode('latin-1', errors='replace')
+        target = f'https://{CHAT_DOMAIN}{path}' + (f'?{query}' if query else '')
+        response = RedirectResponse(status_code=308, url=target)
+        await response(scope, receive, send)

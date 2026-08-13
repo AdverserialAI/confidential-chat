@@ -201,6 +201,7 @@ from open_webui.utils.access_control import has_permission
 from open_webui.utils.actions import chat_action as chat_action_handler
 from open_webui.utils.asgi_middleware import (
     AuthTokenMiddleware,
+    ChatDomainSplitMiddleware,
     CommitSessionMiddleware,
     RedirectMiddleware,
     WebsocketUpgradeGuardMiddleware,
@@ -777,6 +778,10 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
+
+# adverserial: outermost — platform.adverserial.ai serves API/auth only,
+# browser traffic 308s to chat.adverserial.ai (registered last = runs first).
+app.add_middleware(ChatDomainSplitMiddleware)
 
 
 app.mount('/ws', socket_app)
