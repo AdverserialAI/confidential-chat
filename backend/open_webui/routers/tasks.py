@@ -107,6 +107,23 @@ async def update_task_config(request: Request, form_data: TaskConfigForm, user=D
     return await get_config_values(TASK_CONFIG_KEYS)
 
 
+async def _task_model_id(form_data: dict) -> str:
+    """form_data['model'] with the empty-model fallback.
+
+    adverserial: browsers that loaded during a backend outage cache an empty
+    model selection and then send model:'' on every task call (title, tags,
+    queries) — default to ui.default_models[0] instead of 404ing the whole
+    chat with "Model '' was not found" (same fallback as /api/chat/completions).
+    """
+    model_id = form_data.get('model') or ''
+    if not model_id:
+        defaults = ((await Config.get('ui.default_models')) or '').split(',')
+        if defaults and defaults[0].strip():
+            model_id = defaults[0].strip()
+            form_data['model'] = model_id
+    return model_id
+
+
 @router.post('/title/completions')
 async def generate_title(request: Request, form_data: dict, user=Depends(get_verified_user)):
     if not await Config.get('task.title.enable'):
@@ -123,7 +140,7 @@ async def generate_title(request: Request, form_data: dict, user=Depends(get_ver
     else:
         models = request.app.state.MODELS
 
-    model_id = form_data['model']
+    model_id = await _task_model_id(form_data)
     if not model_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -207,7 +224,7 @@ async def generate_follow_ups(request: Request, form_data: dict, user=Depends(ge
     else:
         models = request.app.state.MODELS
 
-    model_id = form_data['model']
+    model_id = await _task_model_id(form_data)
     if model_id not in models:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -277,7 +294,7 @@ async def generate_chat_tags(request: Request, form_data: dict, user=Depends(get
     else:
         models = request.app.state.MODELS
 
-    model_id = form_data['model']
+    model_id = await _task_model_id(form_data)
     if model_id not in models:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -341,7 +358,7 @@ async def generate_image_prompt(request: Request, form_data: dict, user=Depends(
     else:
         models = request.app.state.MODELS
 
-    model_id = form_data['model']
+    model_id = await _task_model_id(form_data)
     if model_id not in models:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -423,7 +440,7 @@ async def generate_queries(request: Request, form_data: dict, user=Depends(get_v
     else:
         models = request.app.state.MODELS
 
-    model_id = form_data['model']
+    model_id = await _task_model_id(form_data)
     if model_id not in models:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -504,7 +521,7 @@ async def generate_autocompletion(request: Request, form_data: dict, user=Depend
     else:
         models = request.app.state.MODELS
 
-    model_id = form_data['model']
+    model_id = await _task_model_id(form_data)
     if model_id not in models:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -568,7 +585,7 @@ async def generate_emoji(request: Request, form_data: dict, user=Depends(get_ver
     else:
         models = request.app.state.MODELS
 
-    model_id = form_data['model']
+    model_id = await _task_model_id(form_data)
     if model_id not in models:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -634,7 +651,7 @@ async def generate_moa_response(request: Request, form_data: dict, user=Depends(
     else:
         models = request.app.state.MODELS
 
-    model_id = form_data['model']
+    model_id = await _task_model_id(form_data)
 
     if model_id not in models:
         raise HTTPException(
