@@ -399,23 +399,12 @@ def convert_anthropic_to_openai_payload(
             openai_payload['reasoning_effort'] = output_config['effort']
 
         format_config = output_config.get('format')
-        if isinstance(format_config, dict):
-            format_type = format_config.get('type')
-            if format_type == 'json_schema':
-                json_schema = {
-                    'name': format_config.get('name', 'response_schema'),
-                    'schema': format_config.get('schema', {}),
-                }
-                if 'description' in format_config:
-                    json_schema['description'] = format_config['description']
-                if 'strict' in format_config:
-                    json_schema['strict'] = format_config['strict']
-                openai_payload['response_format'] = {
-                    'type': 'json_schema',
-                    'json_schema': json_schema,
-                }
-            elif format_type == 'json_object':
-                openai_payload['response_format'] = {'type': format_type}
+        # adverserial: do NOT translate output_config.format into
+        # response_format — vLLM's guidance backend can't init on K3's
+        # tiktoken tokenizer and the request dies mid-stream. Dropping it
+        # degrades structured output to free text, which harnesses tolerate.
+        if isinstance(format_config, dict) and False:
+            pass
 
     if 'reasoning_effort' in anthropic_payload:
         openai_payload['reasoning_effort'] = anthropic_payload['reasoning_effort']

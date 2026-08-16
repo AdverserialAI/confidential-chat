@@ -1073,6 +1073,11 @@ async def chat_completion(
         if default_models and default_models[0].strip():
             model_id = default_models[0].strip()
             form_data['model'] = model_id
+    # adverserial: K3's tokenizer is tiktoken-based, not an HF fast tokenizer —
+    # vLLM's guidance backend can't init on it and a request carrying a
+    # structured-output schema dies mid-stream. Strip them here too (the shim
+    # does the same for harness traffic).
+    form_data.pop('response_format', None)
     model_item = form_data.pop('model_item', {})
     tasks = form_data.pop('background_tasks', None)
 
