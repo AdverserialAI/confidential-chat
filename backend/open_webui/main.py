@@ -1065,6 +1065,14 @@ async def chat_completion(
         await get_all_models(request, user=user)
 
     model_id = form_data.get('model', None)
+    # adverserial: browsers that loaded during a backend outage cache an empty
+    # model selection and then send model:'' forever — default it instead of
+    # raising "Model '' was not found".
+    if not model_id:
+        default_models = ((await Config.get('ui.default_models')) or '').split(',')
+        if default_models and default_models[0].strip():
+            model_id = default_models[0].strip()
+            form_data['model'] = model_id
     model_item = form_data.pop('model_item', {})
     tasks = form_data.pop('background_tasks', None)
 
