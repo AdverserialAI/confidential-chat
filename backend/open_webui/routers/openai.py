@@ -327,7 +327,7 @@ async def get_anthropic_token_count_target(request: Request, form_data: dict, us
 
     model = models.get(model_id)
     if not model or 'urlIdx' not in model:
-        raise HTTPException(status_code=404, detail=ERROR_MESSAGES.MODEL_NOT_FOUND())
+        raise HTTPException(status_code=404, detail=ERROR_MESSAGES.MODEL_NOT_FOUND(model_id))
 
     url, key, api_config = await get_openai_connection(model['urlIdx'])
     prefix_id = api_config.get('prefix_id')
@@ -701,10 +701,25 @@ async def get_all_models(request: Request, user: UserModel) -> dict[str, list]:
                             merged['loaded'] = loaded
 
                         models[model_id] = merged
+            else:
+                # A dead connection used to be skipped silently, leaving an
+                # empty registry that surfaced as a misleading 404
+                # "Model '' was not found". Log it so backend outages are
+                # distinguishable from a genuinely unknown model id.
+                skipped_url = api_base_urls[idx] if idx < len(api_base_urls) else '?'
+                log.warning(
+                    f'get_all_models: connection {idx} ({skipped_url}) '
+                    f'skipped: {str(model_list)[:200]}'
+                )
 
         return models
 
     models = get_merged_models(map(extract_data, responses))
+    if not models and responses:
+        log.error(
+            'get_all_models: model registry EMPTY after merge — every chat '
+            'completion will 404 MODEL_NOT_FOUND until a connection recovers'
+        )
     log.debug(f'models: {models}')
 
     request.app.state.OPENAI_MODELS = models
@@ -1243,7 +1258,7 @@ async def generate_chat_completion(
     else:
         raise HTTPException(
             status_code=404,
-            detail=ERROR_MESSAGES.MODEL_NOT_FOUND(),
+            detail=ERROR_MESSAGES.MODEL_NOT_FOUND(model_id),
         )
 
     url, key, api_config = await get_openai_connection(idx)
