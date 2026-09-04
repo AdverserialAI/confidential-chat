@@ -348,19 +348,6 @@
 			</UserSettingSection>
 		{/if}
 
-		<!-- adverserial: key management lives on the billing account page -->
-		<UserSettingSection title={$i18n.t('API keys')}>
-			<UserSettingRow description={$i18n.t('Create and revoke API keys on your billing account page.')}>
-				<span slot="label">{$i18n.t('API Key')}</span>
-				<a
-					class={actionButtonClass}
-					href="https://billing.adverserial.ai/account"
-					target="_blank"
-					rel="noopener">{$i18n.t('Manage')}</a
-				>
-			</UserSettingRow>
-		</UserSettingSection>
-
 		{#if false}
 			<UserSettingSection title={$i18n.t('API keys')}>
 				<UserSettingRow description={$i18n.t('Show or hide sensitive account secrets.')}>
