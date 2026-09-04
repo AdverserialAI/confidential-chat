@@ -39,8 +39,8 @@
 	export let show = false;
 	export let role = '';
 
-	// adverserial: live plan status from the billing service for the Billing menu item
-	let billing: { plan?: string; used_today?: number; quota_daily?: number; wallet_usd?: number } = {};
+	// adverserial: live wallet status from the billing service for the Billing menu item
+	let billing: { balance_usd?: number; wallet_usd?: number } = {};
 	const BILLING_BASE = 'https://billing.adverserial.ai';
 	async function loadBilling() {
 		try {
@@ -51,6 +51,8 @@
 		} catch (e) {}
 	}
 	$: if ($user?.email) loadBilling();
+	// pay-per-use: balance_usd is canonical; wallet_usd is the legacy alias
+	$: balance = billing.balance_usd ?? billing.wallet_usd;
 
 	export let profile = false;
 	export let help = false;
@@ -199,14 +201,14 @@
 					>
 						<div class="self-center shrink-0 size-4.5 flex items-center justify-center text-[#35e0ff]">◆</div>
 						<div class="self-center min-w-0 flex-1 truncate">Billing</div>
-						{#if billing.plan === 'hacker-manifesto'}
+						{#if balance != null}
 							<span
 								class="ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-mono"
-								style="background:rgba(53,224,255,.12);color:#35e0ff;border:1px solid rgba(53,224,255,.35)"
-								>HACKER MANIFESTO</span
+								style={balance > 0
+									? 'background:rgba(53,224,255,.12);color:#35e0ff;border:1px solid rgba(53,224,255,.35)'
+									: 'color:#9ca3af;border:1px solid #4b5563'}
+								>BALANCE ${balance.toFixed(2)}</span
 							>
-						{:else}
-							<span class="ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-mono text-gray-500 border border-gray-600">FREE</span>
 						{/if}
 					</a>
 				</div>
