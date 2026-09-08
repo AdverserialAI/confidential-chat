@@ -1,0 +1,46 @@
+/* Adverserial AI enterprise theme — matches adverserial.ai
+   Tokens: ink #202224 / footer #1b1d1f / panel #242a35 / blue #3868f4
+           wash #f4f5f7 / line #dedfe2 / muted #626870 / font Inter */
+
+:root {
+  /* remap Open WebUI's gray palette onto the adverserial ink scale */
+  --color-gray-950: #1b1d1f;
+  --color-gray-900: #202224;
+  --color-gray-850: #242a35;
+  --color-gray-800: #2c313a;
+  --color-gray-700: #3f4b63;
+  --color-gray-600: #626870;
+  --color-gray-500: #a2a9b7;
+  --color-gray-100: #f4f5f7;
+  --color-gray-50:  #fafbfc;
+}
+
+html, body, #app {
+  font-family: Inter, "Helvetica Neue", Arial, sans-serif !important;
+  font-synthesis: none;
+}
+
+/* dark surfaces use the ink tones */
+.dark body, .dark #app {
+  background: #1b1d1f;
+}
+
+/* primary accent — buttons, links, active states */
+a { color: #3868f4; }
+.dark a { color: #89a7ff; }
+
+button.bg-gray-900, .dark button.bg-gray-50,
+.bg-gray-900.text-white, .dark .bg-gray-50.text-gray-900 {
+  background: #3868f4 !important;
+  color: #ffffff !important;
+}
+button.bg-gray-900:hover, .dark button.bg-gray-50:hover {
+  background: #2858e1 !important;
+}
+
+/* selection */
+::selection { background: #b5c8ff; color: #16191e; }
+
+/* sidebar + topbar sit on ink */
+.dark .bg-gray-900, .dark .dark\:bg-gray-900 { background-color: #202224 !important; }
+.dark .bg-gray-950, .dark .dark\:bg-gray-950 { background-color: #1b1d1f !important; }
