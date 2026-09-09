@@ -54,5 +54,19 @@ class ModelResolutionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await resolve('other/model', self.request('other/model'), AsyncMock(), None), 'other/model')
 
 
+class PublicCatalogTests(unittest.TestCase):
+    def test_alias_hidden_without_removing_runtime_base(self):
+        models = [{'id': 'cyberglm'}, {'id': 'lordx64/cyberglm'}, {'id': 'lordx64/cyberkimi'}]
+        self.assertEqual([m['id'] for m in module.public_model_catalog(models)], ['lordx64/cyberglm', 'lordx64/cyberkimi'])
+        self.assertEqual(models[0]['id'], 'cyberglm')
+        self.assertEqual(len(models), 3)
+
+    def test_alias_visible_when_canonical_model_is_not_accessible(self):
+        self.assertEqual(module.public_model_catalog([{'id': 'cyberglm'}]), [{'id': 'cyberglm'}])
+
+    def test_unrelated_models_are_preserved(self):
+        self.assertEqual(module.public_model_catalog([{'id': 'another/model'}]), [{'id': 'another/model'}])
+
+
 if __name__ == '__main__':
     unittest.main()

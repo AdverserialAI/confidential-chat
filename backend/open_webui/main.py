@@ -239,7 +239,7 @@ from open_webui.utils.middleware import (
     process_chat_response,
 )
 from open_webui.utils.model_ids import strip_provider_model_prefix
-from open_webui.utils.chat_model_resolution import resolve_chat_model_id
+from open_webui.utils.chat_model_resolution import public_model_catalog, resolve_chat_model_id
 from open_webui.utils.models import (
     check_model_access,
     get_all_base_models,
@@ -859,6 +859,7 @@ async def get_models(request: Request, refresh: bool = False, user=Depends(get_v
     # Access-filter first so the per-model payload work below only runs for
     # models the caller can actually see.
     models = await get_filtered_models(models, user)
+    models = public_model_catalog(models)
 
     for model in models:
         # Remove profile image URL to reduce payload size
