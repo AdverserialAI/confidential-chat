@@ -239,6 +239,7 @@ from open_webui.utils.middleware import (
     process_chat_response,
 )
 from open_webui.utils.model_ids import strip_provider_model_prefix
+from open_webui.utils.chat_model_resolution import resolve_chat_model_id
 from open_webui.utils.models import (
     check_model_access,
     get_all_base_models,
@@ -1085,8 +1086,8 @@ async def chat_completion(
     try:
         model_info = None
         if not model_item.get('direct', False):
-            if model_id not in request.app.state.MODELS:
-                raise Exception('Model not found')
+            model_id = await resolve_chat_model_id(model_id, request, get_all_models, user)
+            form_data['model'] = model_id
 
             model = request.app.state.MODELS[model_id]
             model_info = await Models.get_model_by_id(model_id)
