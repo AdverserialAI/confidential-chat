@@ -125,11 +125,11 @@
 	}}
 />
 
-<Dropdown bind:show onOpenChange={handleDropdownChange} {align}>
+<Dropdown bind:show onOpenChange={handleDropdownChange} {align} contentClass="user-profile-popover">
 	<slot />
 
 	<div slot="content">
-		<DropdownMenu className="{className} font-sans text-xs">
+		<DropdownMenu className="{className} user-profile-menu font-sans text-xs">
 			{#if $user}
 				<div>
 					<button
@@ -199,14 +199,10 @@
 							document.body.removeChild(form);
 						}}
 					>
-						<div class="self-center shrink-0 size-4.5 flex items-center justify-center text-[#35e0ff]">◆</div>
 						<div class="self-center min-w-0 flex-1 truncate">Billing</div>
 						{#if balance != null}
 							<span
-								class="ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-mono"
-								style={balance > 0
-									? 'background:rgba(53,224,255,.12);color:#35e0ff;border:1px solid rgba(53,224,255,.35)'
-									: 'color:#9ca3af;border:1px solid #4b5563'}
+								class="wallet-balance-badge ml-auto shrink-0 font-mono"
 								>BALANCE ${balance.toFixed(2)}</span
 							>
 						{/if}
