@@ -3,24 +3,24 @@
 @config '../tailwind.config.js';
 
 @theme {
-	/* Adverserial palette: cyan-tinted steel replacing the neutral gray scale.
-	   Dark anchors: gray-950 #04090d (page), gray-850 #07141c (panels). */
-	--color-gray-50: #f2fcff;
-	--color-gray-100: #dcf5fb;
-	--color-gray-200: #bfe9f4;
-	--color-gray-300: #9fd8e8;
-	--color-gray-400: #7fb3c2;
-	--color-gray-500: #5d8794;
-	--color-gray-600: #44626e;
-	--color-gray-700: #2a4753;
-	--color-gray-800: #163039;
-	--color-gray-850: #07141c;
-	--color-gray-900: #051018;
-	--color-gray-950: #04090d;
+	/* Adverserial palette: graphite, silver, and neutral surfaces.
+	   Dark anchors: gray-950 #1b1d1f (page), gray-850 #282e38 (panels). */
+	--color-gray-50: #fafbfc;
+	--color-gray-100: #f4f5f7;
+	--color-gray-200: #dedfe2;
+	--color-gray-300: #c2c8d1;
+	--color-gray-400: #929ba9;
+	--color-gray-500: #758090;
+	--color-gray-600: #626870;
+	--color-gray-700: #475365;
+	--color-gray-800: #303640;
+	--color-gray-850: #282e38;
+	--color-gray-900: #202224;
+	--color-gray-950: #1b1d1f;
 
 	/* Adverserial accents */
-	--color-accent: #35e0ff;
-	--color-accent-highlight: #7df9ff;
+	--color-accent: #91b5a4;
+	--color-accent-highlight: #b9d5c8;
 
 	/* Monospace accents: JetBrains Mono where feasible */
 	--font-mono: 'JetBrains Mono', 'JetBrainsMono', ui-monospace, SFMono-Regular, Menlo, Monaco,
@@ -50,7 +50,7 @@
 	html.dark ::before,
 	html.dark ::backdrop,
 	html.dark ::file-selector-button {
-		border-color: rgba(53, 224, 255, 0.14);
+		border-color: rgba(194, 200, 209, 0.16);
 	}
 }
 
