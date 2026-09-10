@@ -1,4 +1,5 @@
 <script lang="ts">
+	import OpenWebUICredit from '$lib/components/common/OpenWebUICredit.svelte';
 	import DOMPurify from 'dompurify';
 	import { toast } from 'svelte-sonner';
 
@@ -2440,6 +2441,7 @@
 						{:else}
 							<div class="mb-1" />
 						{/if}
+						<OpenWebUICredit />
 					</form>
 				</div>
 			</div>
