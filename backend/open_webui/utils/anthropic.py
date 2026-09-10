@@ -642,6 +642,10 @@ async def openai_stream_to_anthropic_stream(openai_stream_generator, model: str 
             for line in chunk.strip().split('\n'):
                 line = line.strip()
 
+                if line.startswith(':'):
+                    # Keep the platform's own router alive while inference is queued.
+                    yield b'event: ping\ndata: {"type":"ping"}\n\n'
+                    continue
                 if not line or not line.startswith('data:'):
                     continue
 
@@ -655,6 +659,13 @@ async def openai_stream_to_anthropic_stream(openai_stream_generator, model: str 
                     data = json.loads(data_string)
                 except (json.JSONDecodeError, TypeError):
                     continue
+
+                if data.get('error'):
+                    error = {'type': 'error', 'error': {
+                        'type': 'api_error', 'message': 'Upstream generation failed.'
+                    }}
+                    yield f'event: error\ndata: {json.dumps(error)}\n\n'.encode()
+                    return
 
                 usage_data = data.get('usage')
                 if isinstance(usage_data, dict):
@@ -886,7 +897,12 @@ async def openai_stream_to_anthropic_stream(openai_stream_generator, model: str 
                     stop_reason = stop_reason_map.get(finish_reason, 'end_turn')
 
     except Exception as e:
-        log.error(f'Error in Anthropic stream conversion: {e}')
+        log.error('Anthropic stream conversion failed: %s', type(e).__name__)
+        yield b'event: error\ndata: {"type":"error","error":{"type":"api_error","message":"Upstream stream failed."}}\n\n'
+        return
+    finally:
+        if hasattr(openai_stream_generator, 'aclose'):
+            await openai_stream_generator.aclose()
 
     # Close any open thinking block
     if thinking_block_open:
