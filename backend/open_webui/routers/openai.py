@@ -453,7 +453,7 @@ async def update_config(request: Request, form_data: OpenAIConfigForm, user=Depe
 
 
 @router.post('/audio/speech')
-async def speech(request: Request, user=Depends(get_verified_user)):
+async def speech(request: Request, user=Depends(get_admin_user)):
     if user.role != 'admin' and not await has_permission(user.id, 'chat.tts', await Config.get('user.permissions')):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -1197,7 +1197,7 @@ def convert_responses_result(response: dict) -> dict:
 async def generate_chat_completion(
     request: Request,
     form_data: dict,
-    user=Depends(get_verified_user),
+    user=Depends(get_admin_user),
 ):
     if not await Config.get('openai.enable'):
         raise HTTPException(status_code=503, detail='OpenAI API is disabled')
@@ -1580,7 +1580,7 @@ class ResponsesForm(BaseModel):
 async def responses(
     request: Request,
     form_data: ResponsesForm,
-    user=Depends(get_verified_user),
+    user=Depends(get_admin_user),
 ):
     """
     Forward requests to the OpenAI Responses API endpoint.
@@ -1687,7 +1687,7 @@ async def responses(
 
 
 @router.api_route('/{path:path}', methods=['GET', 'POST', 'PUT', 'DELETE'])
-async def proxy(path: str, request: Request, user=Depends(get_verified_user)):
+async def proxy(path: str, request: Request, user=Depends(get_admin_user)):
     """
     Deprecated: proxy all requests to OpenAI API.
     Disabled by default. Set ENABLE_OPENAI_API_PASSTHROUGH=True to enable.

@@ -1150,7 +1150,7 @@ async def add_user(
 
 @router.get('/admin/details')
 async def get_admin_details(
-    request: Request, user=Depends(get_current_user), db: AsyncSession = Depends(get_async_session)
+    request: Request, user=Depends(get_admin_user), db: AsyncSession = Depends(get_async_session)
 ):
     if await Config.get('auth.admin.show'):
         admin_email = await Config.get('auth.admin.email')

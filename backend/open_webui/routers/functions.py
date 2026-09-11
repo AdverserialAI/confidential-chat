@@ -49,7 +49,13 @@ async def get_functions(user=Depends(get_verified_user), db: AsyncSession = Depe
     if not ENABLE_PLUGINS:
         return []
 
-    return await Functions.get_functions(db=db)
+    functions = await Functions.get_functions(db=db)
+    if user.role != 'admin':
+        # HUD-safe recon filter: plugin inventory of filter-type functions
+        # (e.g. the paywall filter) reveals internal enforcement details —
+        # regular users never need them (see security report 2026-09-R2/#2).
+        functions = [f for f in functions if f.type != 'filter']
+    return functions
 
 
 @router.get('/list', response_model=list[FunctionUserResponse])
