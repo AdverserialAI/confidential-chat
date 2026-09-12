@@ -139,17 +139,25 @@ def get_message_list(messages_map, message_id):
     message_list = []
     visited_message_ids = set()
 
+    current_key = message_id
     while current_message:
         message_id = current_message.get('id')
-        if message_id in visited_message_ids:
+        # Cycle guard tracks the MAP KEY in addition to any embedded 'id'
+        # field — a message that omits 'id' could never be recorded by the
+        # value-based check (security report R9 loop: missing id → infinite
+        # walk + unbounded memory growth).
+        if current_key in visited_message_ids or message_id in visited_message_ids:
             # Cycle detected, break to prevent infinite loop
             break
 
+        if current_key is not None:
+            visited_message_ids.add(current_key)
         if message_id is not None:
             visited_message_ids.add(message_id)
 
         message_list.append(current_message)
         parent_id = current_message.get('parentId')  # Use .get() for safety
+        current_key = parent_id
         current_message = messages_map.get(parent_id) if parent_id else None
 
     message_list.reverse()

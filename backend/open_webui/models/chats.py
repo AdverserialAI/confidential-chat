@@ -826,8 +826,15 @@ class ChatTable:
             if current_id is None
             else messages.get(current_id, {}).get('childrenIds', [])
         )
+        visited_ids = set()
         while child_ids:
             current_id = child_ids[-1]
+            if current_id in visited_ids:
+                # Malicious/self-referential graph (childrenIds cycle): break
+                # rather than spin this thread forever (security report R9,
+                # allocation-free DoS — no OOM, no dyno auto-restart).
+                break
+            visited_ids.add(current_id)
             child_ids = messages.get(current_id, {}).get('childrenIds', [])
         history['currentId'] = current_id if current_id in messages else None
         return deleted_ids

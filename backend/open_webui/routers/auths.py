@@ -391,11 +391,20 @@ async def update_password(
     if WEBUI_AUTH_TRUSTED_EMAIL_HEADER:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=ERROR_MESSAGES.ACTION_PROHIBITED)
     if session_user:
-        user = await Auths.authenticate_user(
-            session_user.email,
-            lambda pw: verify_password(form_data.password, pw),
-            db=db,
-        )
+        if session_user.oauth:
+            # The account carries an OAuth identity (e.g., Google sign-in);
+            # it was created with a random-uuid password the owner cannot
+            # know, so demanding the current password locks them out of
+            # setting one forever (R-business UX report, "Julian"
+            # phannguyenbaouy1). The authenticated session itself is the
+            # proof of ownership here.
+            user = await Users.get_user_by_email(session_user.email, db=db)
+        else:
+            user = await Auths.authenticate_user(
+                session_user.email,
+                lambda pw: verify_password(form_data.password, pw),
+                db=db,
+            )
 
         if user:
             try:

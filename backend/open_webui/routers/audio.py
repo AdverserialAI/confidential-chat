@@ -1181,7 +1181,7 @@ async def transcription(
     request: Request,
     file: UploadFile = File(...),
     language: Optional[str] = Form(None),
-    user=Depends(get_verified_user),
+    user=Depends(get_admin_user),
 ):
     if user.role != 'admin' and not await has_permission(user.id, 'chat.stt', await Config.get('user.permissions')):
         raise HTTPException(

@@ -124,7 +124,7 @@ async def search_users(
     order_by: str | None = None,
     direction: str | None = None,
     page: int | None = 1,
-    user=Depends(get_verified_user),
+    user=Depends(get_admin_user),
     db: AsyncSession = Depends(get_async_session),
 ):
     limit = PAGE_ITEM_COUNT
@@ -764,7 +764,7 @@ async def get_user_by_id(user_id: str, user=Depends(get_admin_user), db: AsyncSe
 
 @router.get('/{user_id}/info', response_model=UserInfoResponse)
 async def get_user_info_by_id(
-    user_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+    user_id: str, user=Depends(get_admin_user), db: AsyncSession = Depends(get_async_session)
 ):
     user = await Users.get_user_by_id(user_id, db=db)
     if user:
@@ -851,7 +851,7 @@ async def get_user_profile_image_by_id(user_id: str, user=Depends(get_verified_u
 
 @router.get('/{user_id}/active', response_model=dict)
 async def get_user_active_status_by_id(
-    user_id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+    user_id: str, user=Depends(get_admin_user), db: AsyncSession = Depends(get_async_session)
 ):
     return {
         'active': await Users.is_user_active(user_id, db=db),

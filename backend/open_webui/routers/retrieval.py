@@ -2092,7 +2092,15 @@ async def process_text(
 ):
     collection_name = form_data.collection_name
     if collection_name is None:
-        collection_name = calculate_sha256_string(form_data.content)
+        # Require an explicit, access-validated collection. The legacy
+        # derive-from-content fallback skipped _validate_collection_access
+        # entirely and minted orphaned vector-store space no one could read
+        # (security report R5c: unbounded embedding CPU + unbounded DB
+        # growth by any free account).
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='collection_name is required',
+        )
     else:
         await _validate_collection_access([collection_name], user, access_type='write')
 

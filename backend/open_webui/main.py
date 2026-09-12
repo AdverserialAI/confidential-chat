@@ -1022,7 +1022,11 @@ async def unload_model(request: Request, form_data: ModelUnloadForm, user=Depend
 
 @app.post('/api/embeddings')
 @app.post('/api/v1/embeddings')  # Experimental: Compatibility with OpenAI API
-async def embeddings(request: Request, form_data: dict, user=Depends(get_verified_user)):
+async def embeddings(request: Request, form_data: dict, user=Depends(get_admin_user)):
+    # security report R3/addendum: embeddings run unmetered on this route
+    # because trial_gate only executes on /api/chat/*; it is inert today
+    # (no embedding model upstream) but would become a live billing bypass
+    # the day one is deployed. Admin-gated to close the class.
     """
     OpenAI-compatible embeddings endpoint.
 
