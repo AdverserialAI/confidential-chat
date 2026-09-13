@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { embed, showControls, showEmbeds } from '$lib/stores';
+	import { safeOpenUrl } from '$lib/utils/url-safety';
 
 	import CitationModal from './Citations/CitationModal.svelte';
 
@@ -45,8 +46,8 @@
 				const embedUrl = citations[index].source.embed_url;
 				if (embedUrl) {
 					if (readOnly) {
-						// Open in new tab if readOnly
-						window.open(embedUrl, '_blank');
+						// Open in new tab if readOnly — scheme-gated (ADV5-001)
+						safeOpenUrl(embedUrl);
 						return;
 					} else {
 						showControls.set(true);

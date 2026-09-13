@@ -5,6 +5,7 @@
 	import { getContext, onMount, tick } from 'svelte';
 
 	import { formatFileSize, getLineCount } from '$lib/utils';
+	import { safeOpenUrl } from '$lib/utils/url-safety';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import { settings } from '$lib/stores';
 	import { getKnowledgeById } from '$lib/apis/knowledge';
@@ -268,14 +269,18 @@
 							on:click|preventDefault={() => {
 								if (item.type === 'file' || item.url) {
 									let fileId = item?.id ?? item?.tempId;
-									window.open(
-										item.type === 'file'
-											? item?.url?.startsWith('http')
+									if (item.type === 'file') {
+										// files loaded from our own API host — same shape as before
+										window.open(
+											item?.url?.startsWith('http')
 												? item.url
-												: `${WEBUI_API_BASE_URL}/files/${fileId}/content`
-											: item.url,
-										'_blank'
-									);
+												: `${WEBUI_API_BASE_URL}/files/${fileId}/content`,
+											'_blank'
+										);
+									} else {
+										// scheme-gated (ADV5-001) — blocks javascript:/vbscript:/data: etc.
+										safeOpenUrl(item.url);
+									}
 								}
 							}}
 						>

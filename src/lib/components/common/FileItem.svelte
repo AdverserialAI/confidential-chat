@@ -3,6 +3,7 @@
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 
 	import { formatFileSize } from '$lib/utils';
+	import { safeOpenUrl } from '$lib/utils/url-safety';
 	import { settings } from '$lib/stores';
 
 	import FileItemModal from './FileItemModal.svelte';
@@ -63,12 +64,13 @@
 			if (url) {
 				if (type === 'file') {
 					if (url.startsWith('http')) {
-						window.open(`${url}/content`, '_blank').focus();
+						safeOpenUrl(`${url}/content`);
 					} else {
 						window.open(`${WEBUI_API_BASE_URL}/files/${url}/content`, '_blank').focus();
 					}
 				} else {
-					window.open(`${url}`, '_blank').focus();
+					// scheme-gated (ADV5-001) — blocks javascript:/vbscript:/data: etc.
+					safeOpenUrl(`${url}`);
 				}
 			}
 		}
