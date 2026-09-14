@@ -79,7 +79,7 @@ class ChatForm(BaseModel):
 
 
 @router.post('/pdf')
-async def download_chat_as_pdf(form_data: ChatTitleMessagesForm, user=Depends(get_verified_user)):
+async def download_chat_as_pdf(form_data: ChatTitleMessagesForm, user=Depends(get_admin_user)):  # admin-only: free reportlab CPU for $0 accounts (ADV11-003)
     try:
         pdf_bytes = PDFGenerator(form_data).generate_chat_pdf()
 

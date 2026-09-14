@@ -2143,7 +2143,7 @@ async def process_web(
     form_data: ProcessUrlForm,
     process: bool = Query(True, description='Whether to process and save the content'),
     overwrite: bool = Query(True, description='Whether to overwrite existing collection'),
-    user=Depends(get_verified_user),
+    user=Depends(get_admin_user),  # admin-only: SSRF + orphaned vector collections by $0 accounts (ADV11-002)
 ):
     config = await get_retrieval_config()
     try:

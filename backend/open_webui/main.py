@@ -1838,7 +1838,7 @@ from open_webui.utils.anthropic import (
 async def count_message_tokens(
     request: Request,
     form_data: dict,
-    user=Depends(get_verified_user),
+    user=Depends(get_admin_user),  # admin-only: unmetered upstream proxy (ADV11-001)
 ):
     return {'input_tokens': await openai.count_anthropic_tokens(request, form_data, user)}
 
