@@ -15,6 +15,7 @@
 	import DropdownMenu from '$lib/components/common/DropdownMenu.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import UserStatusModal from './UserStatusModal.svelte';
+	import MembershipUsage from './MembershipUsage.svelte';
 	import Emoji from '$lib/components/common/Emoji.svelte';
 	import CalendarIcon from './icons/Calendar.svelte';
 	import ClockIcon from './icons/Clock.svelte';
@@ -101,6 +102,7 @@
 
 	const handleDropdownChange = (state) => {
 		dispatch('change', state);
+		if (state) loadBilling();
 
 		// Fetch usage info when dropdown opens, if user has permission
 		if (state && ($config?.features?.enable_public_active_users_count || role === 'admin')) {
@@ -209,6 +211,8 @@
 					</a>
 				</div>
 			{/if}
+
+			{#if show && $user}<MembershipUsage />{/if}
 
 			{#if profile}
 				{#if $user?.status_emoji || $user?.status_message}
