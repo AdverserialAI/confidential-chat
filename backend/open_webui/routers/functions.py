@@ -599,6 +599,9 @@ async def get_function_user_valves_spec_by_id(
 ):
     function = await Functions.get_function_by_id(id, db=db)
     if function:
+        if not function.is_active:
+            return None
+
         function_module, function_type, frontmatter = await get_function_module_from_cache(request, id)
 
         if hasattr(function_module, 'UserValves'):
@@ -626,6 +629,12 @@ async def update_function_user_valves_by_id(
     function = await Functions.get_function_by_id(id, db=db)
 
     if function:
+        if not function.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='Function is not active',
+            )
+
         function_module, function_type, frontmatter = await get_function_module_from_cache(request, id)
 
         if hasattr(function_module, 'UserValves'):

@@ -22,6 +22,14 @@
 	--color-accent: #91b5a4;
 	--color-accent-highlight: #b9d5c8;
 
+	/* Upstream font tokens (v0.11.3) — needed by newer components */
+	--font-sans:
+		var(--app-font-family, -apple-system), BlinkMacSystemFont, 'Inter', 'Vazirmatn', ui-sans-serif,
+		system-ui, 'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif, 'Helvetica Neue',
+		Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+	--font-primary: var(--font-sans);
+	--font-secondary: var(--font-sans);
+
 	/* Monospace accents: JetBrains Mono where feasible */
 	--font-mono: 'JetBrains Mono', 'JetBrainsMono', ui-monospace, SFMono-Regular, Menlo, Monaco,
 		Consolas, 'Liberation Mono', 'Courier New', monospace;
@@ -55,7 +63,10 @@
 }
 
 @layer base {
-	html,
+	html {
+		font-family: var(--font-sans);
+	}
+
 	pre {
 		font-family:
 			-apple-system, BlinkMacSystemFont, 'Inter', 'Vazirmatn', ui-sans-serif, system-ui, 'Segoe UI',
@@ -106,6 +117,13 @@
 
 	input[type='checkbox']:checked:after {
 		opacity: 1;
+	}
+}
+
+@layer utilities {
+	.font-primary,
+	.font-secondary {
+		font-family: var(--font-sans);
 	}
 }
 
