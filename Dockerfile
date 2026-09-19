@@ -28,7 +28,9 @@ FROM --platform=$BUILDPLATFORM node:22-alpine3.20 AS build
 ARG BUILD_HASH
 
 # Set Node.js options (heap limit Allocation failed - JavaScript heap out of memory)
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+# v0.11.x frontend (6.3k+ modules) exceeded the 4 GiB vite heap cap in-container;
+# build-stage runs natively on the builder, and the runtime stages are unaffected.
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 
 WORKDIR /app
 
