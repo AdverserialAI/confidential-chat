@@ -11,13 +11,11 @@
 		type VerificationResult
 	} from '$lib/confidential/verification';
 
-	type Section = 'runtime' | 'transport' | 'build';
 	type VerifiableModel = { id?: string; name?: string; info?: { meta?: Record<string, unknown> } };
 
 	let open = false;
-	let expanded: Section | null = 'runtime';
 	let localPreview = false;
-	let showSimulatedResult = false;
+	let showPreviewProof = false;
 	let verifying = false;
 	let result: VerificationResult | null = null;
 
@@ -28,15 +26,7 @@
 	$: simulation = localPreview && !verificationConfig;
 	$: verified = result?.status === 'verified';
 	$: failed = result?.status === 'failed';
-	$: posture = verified
-		? 'ATTESTED'
-		: failed
-			? 'REVIEW REQUIRED'
-			: simulation
-				? 'LOCAL UI'
-				: verificationConfig
-					? 'AWAITING PROOF'
-					: 'NOT CONFIGURED';
+	$: statusLabel = verified ? 'Verified' : failed ? 'Check failed' : simulation ? 'Local preview' : verificationConfig ? 'Ready to verify' : 'Not configured';
 
 	onMount(() => {
 		localPreview = ['127.0.0.1', 'localhost'].includes(window.location.hostname);
@@ -44,10 +34,6 @@
 		window.addEventListener('adverserial:open-verification', openCenter);
 		return () => window.removeEventListener('adverserial:open-verification', openCenter);
 	});
-
-	const toggle = (section: Section) => {
-		expanded = expanded === section ? null : section;
-	};
 
 	const verify = async () => {
 		if (!verificationConfig || verifying) return;
@@ -65,181 +51,122 @@
 
 <button
 	type="button"
-	class="verification-trigger fixed bottom-5 right-5 z-[60] inline-flex min-h-12 items-center gap-3 overflow-hidden rounded-xl border border-cyan-300/30 bg-[#070b12]/95 px-3.5 py-2.5 text-left text-cyan-50 shadow-2xl shadow-cyan-950/30 backdrop-blur-xl transition hover:border-cyan-200/65 hover:bg-[#0a111b]/95 focus:outline-none focus:ring-2 focus:ring-cyan-300/80"
+	class="verify-fab fixed bottom-5 right-5 z-[60] inline-flex items-center gap-2 rounded-full border border-[#3f4145] bg-[#161719]/95 px-3 py-2 text-xs font-medium text-[#d9dcdf] shadow-2xl shadow-black/40 backdrop-blur transition hover:border-[#5bd2bc]/50 hover:bg-[#1b1c1f] focus:outline-none focus:ring-2 focus:ring-[#5bd2bc]/60"
 	on:click={() => (open = true)}
 	aria-haspopup="dialog"
 	aria-expanded={open}
 	aria-label="Open Verification Center"
 >
-	<span class="verification-trigger__scan" aria-hidden="true"></span>
-	<span class="relative flex size-7 items-center justify-center rounded-lg border border-cyan-300/30 bg-cyan-300/[0.08] text-cyan-200">
-		<LockClosed className="size-4" strokeWidth="1.8" />
-	</span>
-	<span class="relative flex flex-col leading-none">
-		<span class="text-[0.5625rem] font-semibold tracking-[0.2em] text-cyan-200/60">TRUST LAYER</span>
-		<span class="mt-1 text-[0.6875rem] font-semibold tracking-[0.12em]">VERIFY RUNTIME</span>
-	</span>
-	<span class="relative ml-1 size-1.5 rounded-full {verified ? 'bg-emerald-300' : simulation ? 'bg-amber-300' : 'bg-cyan-300'} shadow-[0_0_12px_currentColor]" aria-hidden="true"></span>
+	<span class="relative flex size-5 items-center justify-center rounded-full border border-[#5bd2bc]/35 bg-[#5bd2bc]/10 text-[#79ddcb]"><LockClosed className="size-3" strokeWidth="2" /></span>
+	<span class="tracking-[0.08em]">VERIFY</span>
+	<span class="size-1.5 rounded-full {verified ? 'bg-[#5bd2bc]' : simulation ? 'bg-[#aaaeb3]' : 'bg-[#5bd2bc]'}" aria-hidden="true"></span>
 </button>
 
 {#if open}
-	<div class="fixed inset-0 z-[70]" aria-live="polite">
+	<div class="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-8" aria-live="polite">
 		<button
 			type="button"
-			class="absolute inset-0 h-full w-full bg-[#02050a]/70 backdrop-blur-sm"
+			class="absolute inset-0 h-full w-full bg-black/75 backdrop-blur-[2px]"
 			on:click={() => (open = false)}
 			aria-label="Close Verification Center"
 		></button>
 
 		<aside
-			class="verification-panel absolute bottom-0 right-0 top-0 flex w-full max-w-[440px] flex-col overflow-y-auto border-l border-cyan-200/15 bg-[#070b12] text-[#edf9fb] shadow-2xl shadow-black/80"
+			class="verification-modal relative max-h-full w-full max-w-[700px] overflow-y-auto rounded-2xl border border-[#3e4146] bg-[#1d1e20] text-[#f2f3f4] shadow-2xl shadow-black/70"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="verification-center-title"
 		>
-			<header class="relative overflow-hidden border-b border-cyan-100/10 px-5 pb-5 pt-5">
-				<div class="header-glow" aria-hidden="true"></div>
-				<div class="relative flex items-start justify-between gap-4">
-					<div class="flex items-center gap-3">
-						<div class="verification-mark flex size-11 items-center justify-center rounded-xl border border-cyan-200/35 bg-cyan-300/[0.08] text-cyan-100">
-							<DocumentCheck className="size-5" strokeWidth="1.65" />
-						</div>
-						<div>
-							<p class="text-[0.6rem] font-semibold tracking-[0.22em] text-cyan-200/65">ADVERSERIAL // TRUST</p>
-							<h2 id="verification-center-title" class="mt-1 text-lg font-semibold tracking-tight text-white">Verification Center</h2>
-						</div>
-					</div>
-					<button
-						type="button"
-						class="relative flex size-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-xl leading-none text-[#b6c5ca] transition hover:border-cyan-100/30 hover:bg-cyan-100/[0.08] hover:text-white"
-						on:click={() => (open = false)}
-						aria-label="Close Verification Center"
-					>
-						×
-					</button>
+			<header class="flex items-start justify-between gap-5 border-b border-[#36383c] px-6 py-5 sm:px-7">
+				<div>
+					<p class="font-mono text-[0.625rem] font-medium tracking-[0.15em] text-[#83d8c8]">ADVERSERIAL AI · RUNTIME VERIFICATION</p>
+					<h2 id="verification-center-title" class="mt-2 text-xl font-semibold tracking-tight text-white">Privacy should be verifiable.</h2>
 				</div>
-				<div class="relative mt-5 flex items-center justify-between gap-3 rounded-lg border border-cyan-100/10 bg-[#05080e]/70 px-3 py-2 font-mono text-[0.625rem] tracking-[0.13em]">
-					<span class="text-[#8197a0]">POSTURE</span>
-					<span class="flex items-center gap-2 font-semibold {verified ? 'text-emerald-200' : failed ? 'text-rose-200' : simulation ? 'text-amber-200' : 'text-cyan-200'}"><span class="size-1.5 rounded-full bg-current shadow-[0_0_10px_currentColor]"></span>{posture}</span>
-				</div>
+				<button
+					type="button"
+					class="flex size-8 shrink-0 items-center justify-center rounded-md text-lg text-[#afb3b7] transition hover:bg-white/[0.06] hover:text-white"
+					on:click={() => (open = false)}
+					aria-label="Close Verification Center"
+				>
+					×
+				</button>
 			</header>
 
-			<div class="verification-grid flex-1 p-4 sm:p-5">
-				<section class="signal-hero relative overflow-hidden rounded-2xl border border-cyan-100/15 bg-[#09111a]/95 p-4">
-					<div class="signal-hero__beam" aria-hidden="true"></div>
-					<div class="relative">
-						<p class="text-[0.625rem] font-semibold tracking-[0.19em] text-cyan-200/70">CONFIDENTIAL INFERENCE TRACE</p>
-						<h3 class="mt-2 max-w-sm text-[1.35rem] font-semibold leading-7 tracking-tight text-white">
-							{#if verified}
-								Runtime receipt validated in this browser.
-							{:else if failed}
-								Verification did not establish trust.
-							{:else if simulation}
-								Review the trust interface before a runtime is connected.
-							{:else if verificationConfig}
-								Request a fresh receipt from the selected runtime.
-							{:else}
-								No confidential runtime is available for verification.
-							{/if}
-						</h3>
-						<p class="mt-3 max-w-sm text-xs leading-5 text-[#a9bcc2]">
-							{#if verified}
-								The signed receipt is nonce-bound and checked against the selected model and runtime policy.
-							{:else if simulation}
-								This is a local visual simulation only. It does not assert encryption, an enclave, hardware attestation, or a secure endpoint.
-							{:else if failed}
-								{result?.reason}
-							{:else}
-								A verified state appears only after a live endpoint returns fresh evidence and a signed receipt that passes browser-side checks.
-							{/if}
+			<div class="verification-grid px-6 pb-6 pt-5 sm:px-7 sm:pb-7">
+				<section class="max-w-[580px]">
+					<p class="text-[0.95rem] leading-7 text-[#d2d5d7]">
+						{#if verified}
+							This browser verified a fresh signed attestation receipt for the configured model and runtime policy.
+						{:else if failed}
+							The latest verification attempt did not establish a trusted runtime. Review the result before sending sensitive work.
+						{:else if simulation}
+							This local preview shows how users will inspect runtime evidence once a confidential inference endpoint is connected.
+						{:else if verificationConfig}
+							A browser-side check can request fresh hardware evidence and verify that its signed receipt matches this model and endpoint.
+						{:else}
+							No active model currently publishes confidential-runtime verification metadata.
+						{/if}
+					</p>
+					{#if simulation}
+						<p class="mt-3 rounded-lg border border-[#4b4d51] bg-[#17181a] px-3 py-2.5 text-xs leading-5 text-[#afb3b7]">
+							<strong class="font-semibold text-[#d8dcdf]">Local UI simulation.</strong> This page does not make a claim about encryption, an enclave, hardware attestation, or a secure inference endpoint.
 						</p>
+					{:else if failed}
+						<p class="mt-3 rounded-lg border border-[#6e4e4e] bg-[#2a1c1d] px-3 py-2.5 text-xs leading-5 text-[#f0c4c4]">{result?.reason}</p>
+					{/if}
+				</section>
 
-						<div class="trace-line mt-5 grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2" aria-label="Verification trace">
-							<div class="trace-node"><span class="trace-node__icon">01</span><span>Browser</span></div>
-							<span class="trace-link"></span>
-							<div class="trace-node"><span class="trace-node__icon">02</span><span>Evidence</span></div>
-							<span class="trace-link"></span>
-							<div class="trace-node"><span class="trace-node__icon">03</span><span>Policy</span></div>
+				<section class="proof-map mt-6 rounded-xl border border-dashed border-[#696c71] bg-[#17181a]/70 p-4 sm:p-5" aria-label="Runtime verification path">
+					<div class="proof-map__label"><span><CheckCircle className="size-3.5" strokeWidth="1.9" /></span> ATTESTATION PATH</div>
+					<div class="proof-map__stage relative mt-5 min-h-[225px] sm:min-h-[205px]">
+						<div class="proof-card proof-card--browser">
+							<div class="proof-card__title"><span class="proof-card__icon">⌁</span> Browser verifier</div>
+							<p>Creates a one-time nonce and checks the signed receipt locally.</p>
 						</div>
+
+						<div class="proof-card proof-card--receipt">
+							<div class="proof-card__title"><span class="proof-card__icon">▣</span> Attestation receipt</div>
+							<p>Must bind fresh evidence, the expected model, endpoint, and runtime policy.</p>
+						</div>
+
+						<div class="proof-card proof-card--runtime">
+							<div class="proof-card__title"><LockClosed className="size-3.5 text-[#74d3c2]" strokeWidth="2" /> Configured runtime</div>
+							<p>{verified ? 'Receipt verified in this browser.' : simulation ? 'No live endpoint in this preview.' : 'Waiting for a live verification response.'}</p>
+						</div>
+
+						<span class="proof-line proof-line--one" aria-hidden="true"></span>
+						<span class="proof-line proof-line--two" aria-hidden="true"></span>
+						<span class="proof-line proof-line--three" aria-hidden="true"></span>
 					</div>
 				</section>
 
-				{#if simulation}
-					<div class="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber-200/20 bg-amber-200/[0.06] px-3.5 py-3">
-						<div>
-							<p class="text-[0.625rem] font-semibold tracking-[0.16em] text-amber-200">LOCAL UI SIMULATION</p>
-							<p class="mt-1 text-xs text-amber-50/70">Preview the interactions; no proof is created.</p>
-						</div>
-						<button
-							type="button"
-							class="rounded-lg border border-amber-100/20 bg-[#120f08]/50 px-3 py-2 text-xs font-semibold text-amber-100 transition hover:bg-amber-100/10"
-							on:click={() => (showSimulatedResult = !showSimulatedResult)}
-						>
-							{showSimulatedResult ? 'Reset preview' : 'Preview checks'}
-						</button>
-					</div>
-				{/if}
-
-				<div class="mt-3 space-y-2.5">
-					<section class="verification-card overflow-hidden rounded-xl border border-cyan-100/10 bg-[#0a1018]/95">
-						<button class="flex w-full items-center gap-3 px-3.5 py-3.5 text-left" type="button" on:click={() => toggle('runtime')} aria-expanded={expanded === 'runtime'}>
-							<div class="verification-card__icon flex size-8 shrink-0 items-center justify-center rounded-lg"><LockClosed className="size-4" strokeWidth="1.7" /></div>
-							<span class="min-w-0 flex-1"><span class="block text-sm font-semibold text-[#e6fcff]">Runtime attestation</span><span class="mt-0.5 block text-[0.625rem] font-medium tracking-[0.12em] text-[#6e8992]">HARDWARE EVIDENCE + RECEIPT</span></span>
-							{#if verified}<span class="state-chip state-chip--verified">VALID</span>{:else if simulation && showSimulatedResult}<span class="state-chip state-chip--preview">PREVIEW</span>{:else}<span class="state-chip">PENDING</span>{/if}
-							<span class="text-sm text-[#7d969e]">{expanded === 'runtime' ? '⌃' : '⌄'}</span>
-						</button>
-						{#if expanded === 'runtime'}
-							<div class="border-t border-cyan-100/10 px-3.5 pb-4 pt-3 text-sm leading-5 text-[#b8c9ce]">
-								{#if verified}
-									The browser validated the signature, nonce, audience, model binding, endpoint binding, and evidence digest. Receipt issued: {result?.status === 'verified' ? result.proof.issuedAt : '—'}.
-								{:else if simulation && showSimulatedResult}
-									Preview state only. A real result requires a current TEE quote and a signed receipt from the actual inference endpoint.
-								{:else}
-									The runtime is not considered attested until the browser receives and validates a fresh signed receipt.
-								{/if}
-							</div>
-						{/if}
-					</section>
-
-					<section class="verification-card overflow-hidden rounded-xl border border-cyan-100/10 bg-[#0a1018]/95">
-						<button class="flex w-full items-center gap-3 px-3.5 py-3.5 text-left" type="button" on:click={() => toggle('transport')} aria-expanded={expanded === 'transport'}>
-							<div class="verification-card__icon flex size-8 shrink-0 items-center justify-center rounded-lg"><span class="font-mono text-xs">↗</span></div>
-							<span class="min-w-0 flex-1"><span class="block text-sm font-semibold text-[#e6fcff]">Transport boundary</span><span class="mt-0.5 block text-[0.625rem] font-medium tracking-[0.12em] text-[#6e8992]">MINIMUM-DATA VERIFICATION REQUEST</span></span>
-							<span class="state-chip state-chip--info">INFO</span>
-							<span class="text-sm text-[#7d969e]">{expanded === 'transport' ? '⌃' : '⌄'}</span>
-						</button>
-						{#if expanded === 'transport'}
-							<div class="border-t border-cyan-100/10 px-3.5 pb-4 pt-3 text-sm leading-5 text-[#b8c9ce]">
-								A live verification request contains only a one-time browser nonce. It does not include chat content, identity, API keys, cookies, account data, prompts, or responses.
-							</div>
-						{/if}
-					</section>
-
-					<section class="verification-card overflow-hidden rounded-xl border border-cyan-100/10 bg-[#0a1018]/95">
-						<button class="flex w-full items-center gap-3 px-3.5 py-3.5 text-left" type="button" on:click={() => toggle('build')} aria-expanded={expanded === 'build'}>
-							<div class="verification-card__icon flex size-8 shrink-0 items-center justify-center rounded-lg"><DocumentCheck className="size-4" strokeWidth="1.7" /></div>
-							<span class="min-w-0 flex-1"><span class="block text-sm font-semibold text-[#e6fcff]">Model policy binding</span><span class="mt-0.5 block text-[0.625rem] font-medium tracking-[0.12em] text-[#6e8992]">MODEL, ENDPOINT + ARTIFACT POLICY</span></span>
-							{#if verified}<span class="state-chip state-chip--verified">BOUND</span>{:else if simulation && showSimulatedResult}<span class="state-chip state-chip--preview">PREVIEW</span>{:else}<span class="state-chip">PENDING</span>{/if}
-							<span class="text-sm text-[#7d969e]">{expanded === 'build' ? '⌃' : '⌄'}</span>
-						</button>
-						{#if expanded === 'build'}
-							<div class="border-t border-cyan-100/10 px-3.5 pb-4 pt-3 text-sm leading-5 text-[#b8c9ce]">
-								A valid receipt must bind the configured model and inference endpoint. Published model-artifact and runtime-policy digests can be checked independently when present.
-							</div>
-						{/if}
-					</section>
+				<div class="mt-5 grid gap-2 sm:grid-cols-3">
+					<div class="assurance-card"><LockClosed className="size-4 text-[#78d8c8]" strokeWidth="1.8" /><div><strong>Runtime isolation</strong><span>{verified ? 'Receipt validated' : 'Evidence required'}</span></div></div>
+					<div class="assurance-card"><span class="font-mono text-sm text-[#78d8c8]">↗</span><div><strong>Data boundary</strong><span>Nonce-only check</span></div></div>
+					<div class="assurance-card"><DocumentCheck className="size-4 text-[#78d8c8]" strokeWidth="1.8" /><div><strong>Code identity</strong><span>Policy-bound receipt</span></div></div>
 				</div>
 
-				{#if verificationConfig}
-					<div class="mt-4 flex gap-2">
-						<button type="button" class="verify-now inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60" disabled={verifying} on:click={verify}>
-							{#if verifying}<Spinner className="size-4" />{:else}<DocumentCheck className="size-4" strokeWidth="1.75" />{/if}
-							{verifying ? 'Checking proof…' : 'Verify live runtime'}
-						</button>
-						<a href={verificationConfig.verificationUrl} target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-cyan-100/20 px-3 py-2.5 text-sm font-medium text-cyan-50 transition hover:bg-cyan-100/[0.08]">Details</a>
+				<div class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#36383c] pt-5">
+					<div class="flex items-center gap-2 text-xs text-[#afb3b7]">
+						<span class="size-1.5 rounded-full {verified ? 'bg-[#5bd2bc]' : failed ? 'bg-[#dd8888]' : 'bg-[#8a8d92]'}"></span>
+						<span>{statusLabel}</span>
 					</div>
-				{:else}
-					<a href="https://verify.adverserial.ai" target="_blank" rel="noopener noreferrer" class="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-cyan-100/20 bg-cyan-100/[0.03] px-3 py-3 text-sm font-semibold text-cyan-50 transition hover:border-cyan-100/35 hover:bg-cyan-100/[0.08]">Open verification center</a>
+					{#if simulation}
+						<button type="button" class="verify-action" on:click={() => (showPreviewProof = !showPreviewProof)}>{showPreviewProof ? 'Reset preview' : 'Preview proof state'}</button>
+					{:else if verificationConfig}
+						<div class="flex gap-2">
+							<button type="button" class="verify-action" disabled={verifying} on:click={verify}>{#if verifying}<Spinner className="size-3.5" />{/if}{verifying ? 'Checking…' : 'Verify runtime'}</button>
+							<a href={verificationConfig.verificationUrl} target="_blank" rel="noopener noreferrer" class="verify-secondary">Details</a>
+						</div>
+					{:else}
+						<a href="https://verify.adverserial.ai" target="_blank" rel="noopener noreferrer" class="verify-secondary">Open verification center</a>
+					{/if}
+				</div>
+
+				{#if simulation && showPreviewProof}
+					<div class="mt-3 rounded-lg border border-[#4a7b72] bg-[#18302d] px-3 py-2.5 text-xs leading-5 text-[#c5eee6]">
+						<strong class="font-semibold">Preview state only.</strong> A production result appears only after this browser validates a fresh hardware-attestation receipt; this button does not create one.
+					</div>
 				{/if}
 			</div>
 		</aside>
@@ -247,140 +174,30 @@
 {/if}
 
 <style>
-	.verification-panel {
-		background-image:
-			linear-gradient(180deg, rgb(6 10 18 / 0.9), rgb(7 11 18 / 1) 22%),
-			radial-gradient(circle at 100% 0%, rgb(34 211 238 / 0.09), transparent 33%);
-	}
-
-	.verification-grid {
-		background-image:
-			linear-gradient(rgb(77 116 129 / 0.08) 1px, transparent 1px),
-			linear-gradient(90deg, rgb(77 116 129 / 0.08) 1px, transparent 1px);
-		background-size: 18px 18px;
-	}
-
-	.verification-trigger__scan {
-		position: absolute;
-		inset: 0;
-		opacity: 0.42;
-		background: linear-gradient(115deg, transparent 12%, rgb(103 232 249 / 0.16) 46%, transparent 62%);
-		transform: translateX(-130%);
-		animation: verification-scan 4.5s ease-in-out infinite;
-	}
-
-	.header-glow {
-		position: absolute;
-		right: -60px;
-		top: -85px;
-		size: 230px;
-		border-radius: 999px;
-		background: radial-gradient(circle, rgb(34 211 238 / 0.2), transparent 66%);
-		filter: blur(8px);
-	}
-
-	.verification-mark,
-	.verification-card__icon {
-		box-shadow: inset 0 0 18px rgb(34 211 238 / 0.08), 0 0 20px rgb(34 211 238 / 0.05);
-	}
-
-	.signal-hero {
-		box-shadow: inset 0 1px rgb(207 250 254 / 0.05), 0 20px 45px rgb(0 0 0 / 0.18);
-	}
-
-	.signal-hero__beam {
-		position: absolute;
-		inset: 0;
-		background:
-			linear-gradient(102deg, transparent 28%, rgb(34 211 238 / 0.11) 50%, transparent 72%),
-			radial-gradient(circle at 80% 35%, rgb(45 212 191 / 0.1), transparent 30%);
-		pointer-events: none;
-	}
-
-	.trace-node {
-		display: flex;
-		min-width: 0;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.35rem;
-		color: rgb(144 177 186);
-		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-		font-size: 0.56rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-
-	.trace-node__icon {
-		display: flex;
-		size: 1.75rem;
-		align-items: center;
-		justify-content: center;
-		border: 1px solid rgb(103 232 249 / 0.32);
-		border-radius: 0.45rem;
-		background: rgb(8 47 73 / 0.26);
-		color: rgb(207 250 254);
-		font-size: 0.58rem;
-	}
-
-	.trace-link {
-		height: 1px;
-		background: linear-gradient(90deg, rgb(34 211 238 / 0.12), rgb(103 232 249 / 0.76), rgb(34 211 238 / 0.12));
-		box-shadow: 0 0 9px rgb(34 211 238 / 0.28);
-	}
-
-	.verification-card {
-		box-shadow: inset 0 1px rgb(255 255 255 / 0.025);
-	}
-
-	.verification-card__icon {
-		border: 1px solid rgb(103 232 249 / 0.2);
-		background: rgb(14 116 144 / 0.13);
-		color: rgb(165 243 252);
-	}
-
-	.state-chip {
-		border: 1px solid rgb(148 163 184 / 0.25);
-		border-radius: 999px;
-		padding: 0.22rem 0.42rem;
-		color: rgb(148 163 184);
-		font-size: 0.56rem;
-		font-weight: 700;
-		letter-spacing: 0.12em;
-	}
-
-	.state-chip--verified {
-		border-color: rgb(110 231 183 / 0.35);
-		background: rgb(16 185 129 / 0.08);
-		color: rgb(167 243 208);
-	}
-
-	.state-chip--preview {
-		border-color: rgb(253 230 138 / 0.3);
-		background: rgb(245 158 11 / 0.08);
-		color: rgb(253 230 138);
-	}
-
-	.state-chip--info {
-		border-color: rgb(103 232 249 / 0.24);
-		color: rgb(165 243 252);
-	}
-
-	.verify-now {
-		background: linear-gradient(135deg, rgb(165 243 252), rgb(45 212 191));
-		color: rgb(6 32 40);
-		box-shadow: 0 8px 24px rgb(34 211 238 / 0.16);
-	}
-
-	.verify-now:hover {
-		filter: brightness(1.06);
-	}
-
-	@keyframes verification-scan {
-		0%, 46% { transform: translateX(-130%); }
-		74%, 100% { transform: translateX(140%); }
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.verification-trigger__scan { animation: none; }
-	}
+	.verification-modal { background-image: linear-gradient(rgb(255 255 255 / 0.012) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.012) 1px, transparent 1px); background-size: 18px 18px; }
+	.verification-grid { background: linear-gradient(180deg, rgb(255 255 255 / 0.012), transparent 55%); }
+	.proof-map { position: relative; }
+	.proof-map__label { position: absolute; display: inline-flex; align-items: center; gap: 0.4rem; margin-top: -1.75rem; margin-left: 0.55rem; border: 1px solid #476e66; border-radius: 0.35rem; background: #1d2827; padding: 0.35rem 0.55rem; color: #79ddcb; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; }
+	.proof-map__stage { display: grid; grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.15fr); grid-template-rows: 1fr 1fr; gap: 1rem; align-items: center; }
+	.proof-card { position: relative; z-index: 1; border: 1px solid #3b3d42; border-radius: 0.5rem; background: #242528; padding: 0.85rem; box-shadow: 0 10px 25px rgb(0 0 0 / 0.15); }
+	.proof-card p { margin: 0.4rem 0 0; color: #acb0b4; font-size: 0.75rem; line-height: 1.35rem; }
+	.proof-card__title { display: flex; align-items: center; gap: 0.45rem; color: #f1f2f3; font-size: 0.82rem; font-weight: 600; }
+	.proof-card__icon { color: #78d8c8; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+	.proof-card--browser { grid-row: 2; }
+	.proof-card--receipt { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+	.proof-card--runtime { grid-column: 2; grid-row: 2; width: 82%; justify-self: end; border-color: #41655e; background: #1b1f20; }
+	.proof-line { position: absolute; z-index: 0; border-color: #70747a; border-style: dashed; opacity: 0.75; }
+	.proof-line--one { left: 20%; top: 27%; width: 51%; border-top-width: 1px; }
+	.proof-line--two { left: 20%; top: 28%; height: 45%; width: 50%; border-bottom-width: 1px; border-left-width: 1px; }
+	.proof-line--three { left: 20%; bottom: 23%; width: 56%; border-top-width: 1px; }
+	.assurance-card { display: flex; min-height: 4.75rem; align-items: flex-start; gap: 0.65rem; border: 1px solid #383a3e; border-radius: 0.6rem; background: #191a1c; padding: 0.85rem; }
+	.assurance-card strong { display: block; color: #e9ebec; font-size: 0.75rem; font-weight: 600; }
+	.assurance-card span { display: block; margin-top: 0.25rem; color: #9ea2a6; font-size: 0.68rem; }
+	.verify-action, .verify-secondary { display: inline-flex; min-height: 2.25rem; align-items: center; justify-content: center; gap: 0.4rem; border-radius: 0.5rem; padding: 0.5rem 0.85rem; font-size: 0.78rem; font-weight: 600; transition: background-color 150ms ease, border-color 150ms ease; }
+	.verify-action { border: 1px solid #4d8177; background: #29453f; color: #a8e8dc; }
+	.verify-action:hover { background: #31564e; }
+	.verify-action:disabled { cursor: not-allowed; opacity: 0.6; }
+	.verify-secondary { border: 1px solid #4a4c50; color: #dde0e2; }
+	.verify-secondary:hover { border-color: #6d7075; background: rgb(255 255 255 / 0.05); }
+	@media (max-width: 520px) { .proof-map__stage { grid-template-columns: 1fr; grid-template-rows: auto; } .proof-card--browser, .proof-card--receipt, .proof-card--runtime { grid-column: auto; grid-row: auto; width: auto; justify-self: auto; } .proof-line { display: none; } }
 </style>
