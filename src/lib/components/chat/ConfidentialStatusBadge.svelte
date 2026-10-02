@@ -14,7 +14,7 @@
 	});
 
 	const openVerificationCenter = () => {
-		window.dispatchEvent(new Event('adverserial:open-verification'));
+		window.dispatchEvent(new Event('adverserial:open-verification-process'));
 	};
 </script>
 

@@ -34,6 +34,8 @@ export type VerifiedProof = {
 	runtimeDigest?: string;
 	evidenceDigest: string;
 	verificationUrl: string;
+	receiptKeyId: string;
+	receiptDigest: string;
 };
 
 export type VerificationResult =
@@ -161,7 +163,7 @@ const verifyReceiptSignature = async (
 	);
 	if (!signatureValid) throw new Error('The verification receipt signature is invalid.');
 
-	return claims;
+	return { claims, keyId };
 };
 
 const asEpochSeconds = (value: unknown, label: string): number => {
@@ -236,7 +238,7 @@ export const verifyConfidentialEndpoint = async (
 		const receipt = asNonEmptyString(payload.verification_receipt);
 		if (!evidence || !receipt) throw new Error('The attestation response is missing evidence or a receipt.');
 
-		const claims = await verifyReceiptSignature(receipt, config.trustedReceiptKeys);
+		const { claims, keyId } = await verifyReceiptSignature(receipt, config.trustedReceiptKeys);
 		const issuedAt = asEpochSeconds(claims.iat, 'iat');
 		const expiresAt = asEpochSeconds(claims.exp, 'exp');
 		if (expiresAt * 1000 <= nowMs) throw new Error('The verification receipt has expired.');
@@ -275,6 +277,7 @@ export const verifyConfidentialEndpoint = async (
 		}
 
 		const evidenceDigest = await sha256(canonicalize(evidence));
+		const receiptDigest = await sha256(receipt);
 		if (asNonEmptyString(claims.evidence_sha256) !== evidenceDigest) {
 			throw new Error('The receipt is not bound to the returned evidence.');
 		}
@@ -288,7 +291,9 @@ export const verifyConfidentialEndpoint = async (
 				modelDigest: config.expected.modelDigest,
 				runtimeDigest: config.expected.runtimeDigest,
 				evidenceDigest,
-				verificationUrl: config.verificationUrl
+				verificationUrl: config.verificationUrl,
+				receiptKeyId: keyId,
+				receiptDigest
 			}
 		};
 	} catch (error) {

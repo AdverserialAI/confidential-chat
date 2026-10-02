@@ -50,6 +50,7 @@
 	import UpdateInfoToast from '$lib/components/layout/UpdateInfoToast.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import VerificationCenter from '$lib/components/chat/VerificationCenter.svelte';
+	import VerificationProcess from '$lib/components/chat/VerificationProcess.svelte';
 	import { loadKeybindings, matchKeybinding, Shortcut } from '$lib/shortcuts';
 
 	const i18n = getContext('i18n');
@@ -548,6 +549,7 @@
 				{/if}
 			{/if}
 		</div>
+		<VerificationProcess />
 		<VerificationCenter />
 	</div>
 {/if}

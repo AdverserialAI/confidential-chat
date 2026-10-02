@@ -74,7 +74,11 @@ describe('confidential verification receipt', () => {
 		});
 
 		expect(result.status).toBe('verified');
-		if (result.status === 'verified') expect(result.proof.modelId).toBe('lordx64/cyberglm');
+		if (result.status === 'verified') {
+			expect(result.proof.modelId).toBe('lordx64/cyberglm');
+			expect(result.proof.receiptKeyId).toBe('test-key');
+			expect(result.proof.receiptDigest).toMatch(/^sha256:/);
+		}
 	});
 
 	it('does not configure a model from incomplete or non-HTTPS metadata', () => {
