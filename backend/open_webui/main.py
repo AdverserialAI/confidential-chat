@@ -294,16 +294,20 @@ async def emit_chat_list_event(metadata: dict, chat_id: str):
 class SPAStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
         try:
-            return await super().get_response(path, scope)
+            response = await super().get_response(path, scope)
         except (HTTPException, StarletteHTTPException) as ex:
-            if ex.status_code == 404:
-                if path.endswith('.js'):
-                    # Return 404 for javascript files
-                    raise ex
-                else:
-                    return await super().get_response('index.html', scope)
-            else:
+            if ex.status_code != 404:
                 raise ex
+            if path.endswith('.js'):
+                # Do not turn a missing asset into the SPA document.
+                raise ex
+            response = await super().get_response('index.html', scope)
+
+        # Keep the document itself fresh after a deployment. Built assets are
+        # fingerprinted and retain their normal cache behavior.
+        if response.headers.get('content-type', '').startswith('text/html'):
+            response.headers['Cache-Control'] = 'no-store, max-age=0'
+        return response
 
 
 class CORSStaticFiles(StaticFiles):

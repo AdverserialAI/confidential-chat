@@ -23,9 +23,9 @@
 		type="button"
 		on:click={openVerificationCenter}
 		aria-label="Open runtime verification"
-		class="inline-flex h-[1.875rem] shrink-0 items-center gap-1.5 rounded-lg border border-[#4a4c50] bg-[#1b1c1f] px-2 text-[0.625rem] font-medium tracking-[0.045em] text-[#d5d8da] transition hover:border-[#5bd2bc]/55 hover:text-white dark:bg-[#1b1c1f]"
+		class="inline-flex h-[1.875rem] shrink-0 items-center gap-1.5 rounded-lg border border-[#3a424e] bg-[#282e38] px-2 text-[0.625rem] font-medium tracking-[0.045em] text-[#d5d8da] transition hover:border-[#91b5a4]/55 hover:text-white dark:bg-[#282e38]"
 	>
-		<span class="flex size-4 items-center justify-center rounded border border-[#5bd2bc]/25 bg-[#5bd2bc]/[0.07] text-[#73d5c3]"><LockClosed className="size-2.5" strokeWidth="2" /></span>
+		<span class="flex size-4 items-center justify-center rounded border border-[#91b5a4]/25 bg-[#91b5a4]/[0.07] text-[#a1c4b3]"><LockClosed className="size-2.5" strokeWidth="2" /></span>
 		<span class="hidden sm:inline">{verificationConfig ? 'Verify runtime' : 'Verification preview'}</span>
 	</button>
 {/if}

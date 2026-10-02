@@ -32,11 +32,11 @@
 
 {#if verificationConfig}
 	<section class="px-3 pb-5 pt-3 text-sm" aria-live="polite" aria-label="Confidential inference proof">
-		<div class="proof-console overflow-hidden rounded-xl border border-[#3e4146] bg-[#1d1e20] text-[#f2f3f4]">
-			<div class="relative overflow-hidden border-b border-[#36383c] px-4 py-4">
+		<div class="proof-console overflow-hidden rounded-xl border border-[#3a424e] bg-[#202224] text-[#edf0f5]">
+			<div class="relative overflow-hidden border-b border-[#343a44] px-4 py-4">
 				<div class="proof-console__glow" aria-hidden="true"></div>
 				<div class="relative flex items-start gap-3">
-					<div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-[#5bd2bc]/30 bg-[#5bd2bc]/[0.07] text-[#8be1d1]">
+					<div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-[#91b5a4]/30 bg-[#91b5a4]/[0.07] text-[#b9d5c8]">
 						{#if result?.status === 'verified'}
 							<CheckCircle className="size-4.5" strokeWidth="1.75" />
 						{:else}
@@ -44,7 +44,7 @@
 						{/if}
 					</div>
 					<div class="min-w-0 flex-1">
-						<p class="text-[0.6rem] font-semibold tracking-[0.18em] text-[#83d8c8]">INFERENCE RECEIPT</p>
+						<p class="text-[0.6rem] font-semibold tracking-[0.18em] text-[#b9d5c8]">INFERENCE RECEIPT</p>
 						<h2 class="mt-1 truncate text-sm font-semibold text-white">{model?.name ?? verificationConfig.expected.modelId}</h2>
 					</div>
 					<span class="proof-status {result?.status === 'verified' ? 'proof-status--verified' : result?.status === 'failed' ? 'proof-status--failed' : ''}">
@@ -55,7 +55,7 @@
 
 			<div class="proof-console__grid p-4">
 				{#if result?.status === 'verified'}
-					<p class="text-sm leading-5 text-[#c5eee6]">
+					<p class="text-sm leading-5 text-[#e5ebf2]">
 						The browser verified the signed receipt and its nonce, model, endpoint, policy, and evidence bindings.
 					</p>
 				{:else if result?.status === 'failed'}
@@ -80,18 +80,18 @@
 						{#if verifying}<Spinner className="size-3.5" />{:else}<DocumentCheck className="size-3.5" strokeWidth="1.75" />{/if}
 						{verifying ? 'Checking receipt…' : 'Verify live runtime'}
 					</button>
-					<a href={verificationConfig.verificationUrl} target="_blank" rel="noopener noreferrer" class="inline-flex min-h-9 items-center rounded-lg border border-[#4a4c50] px-3 py-2 text-xs font-semibold text-[#dde0e2] transition hover:bg-white/[0.05]">View details</a>
+					<a href={verificationConfig.verificationUrl} target="_blank" rel="noopener noreferrer" class="inline-flex min-h-9 items-center rounded-lg border border-[#3a424e] px-3 py-2 text-xs font-semibold text-[#edf0f5] transition hover:bg-white/[0.05]">View details</a>
 				</div>
 
 				{#if result?.status === 'verified'}
-					<dl class="mt-4 space-y-2 border-t border-[#36383c] pt-3 text-xs">
+					<dl class="mt-4 space-y-2 border-t border-[#343a44] pt-3 text-xs">
 						<div class="receipt-row"><dt>Receipt issued</dt><dd>{result.proof.issuedAt}</dd></div>
-						<div class="receipt-row"><dt>Evidence digest</dt><dd class="max-w-44 break-all font-mono text-[0.625rem]">{result.proof.evidenceDigest}</dd></div>
-						{#if result.proof.modelDigest}<div class="receipt-row"><dt>Model artifact</dt><dd class="max-w-44 break-all font-mono text-[0.625rem]">{result.proof.modelDigest}</dd></div>{/if}
+						<div class="receipt-row"><dt>Evidence digest</dt><dd class="max-w-44 break-all text-[0.625rem]">{result.proof.evidenceDigest}</dd></div>
+						{#if result.proof.modelDigest}<div class="receipt-row"><dt>Model artifact</dt><dd class="max-w-44 break-all text-[0.625rem]">{result.proof.modelDigest}</dd></div>{/if}
 					</dl>
 				{/if}
 
-				<p class="mt-4 text-xs leading-5 text-[#9ea2a6]">The check sends a one-time nonce only. It never sends this chat’s prompts, responses, API key, cookies, or account identifier.</p>
+				<p class="mt-4 text-xs leading-5 text-[#a7b1c0]">The check sends a one-time nonce only. It never sends this chat’s prompts, responses, API key, cookies, or account identifier.</p>
 			</div>
 		</div>
 	</section>
@@ -105,7 +105,7 @@
 	.proof-status--verified { border-color: rgb(91 210 188 / 0.35); background: rgb(91 210 188 / 0.1); color: rgb(197 238 230); }
 	.proof-status--failed { border-color: rgb(221 136 136 / 0.35); background: rgb(221 136 136 / 0.1); color: rgb(240 196 196); }
 	.proof-step { display: flex; min-width: 0; flex-direction: column; gap: 0.2rem; border: 1px solid rgb(91 210 188 / 0.16); border-radius: 0.55rem; background: rgb(20 33 31 / 0.55); padding: 0.55rem; }
-	.proof-step span { color: rgb(120 216 200); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.56rem; }
+	.proof-step span { color: rgb(120 216 200); font-size: 0.56rem; }
 	.proof-step strong { overflow: hidden; color: rgb(225 238 236); font-size: 0.65rem; text-overflow: ellipsis; white-space: nowrap; }
 	.proof-verify { background: linear-gradient(135deg, rgb(195 232 225), rgb(91 210 188)); color: rgb(19 38 34); box-shadow: 0 8px 20px rgb(91 210 188 / 0.14); }
 	.proof-verify:hover { filter: brightness(1.06); }
