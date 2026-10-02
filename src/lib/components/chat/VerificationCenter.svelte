@@ -51,7 +51,7 @@
 
 <button
 	type="button"
-	class="verify-fab fixed bottom-5 right-5 z-[60] inline-flex items-center gap-2 rounded-full border border-[#3f4145] bg-[#161719]/95 px-3 py-2 text-xs font-medium text-[#d9dcdf] shadow-2xl shadow-black/40 backdrop-blur transition hover:border-[#5bd2bc]/50 hover:bg-[#1b1c1f] focus:outline-none focus:ring-2 focus:ring-[#5bd2bc]/60"
+	class="verify-fab fixed bottom-5 right-5 z-[60] inline-flex items-center gap-2 rounded-full border border-[#3f4145] bg-[#161719]/95 px-3 py-2 text-xs font-medium text-[#d9dcdf] shadow-2xl shadow-black/40 transition hover:border-[#5bd2bc]/50 hover:bg-[#1b1c1f] focus:outline-none focus:ring-2 focus:ring-[#5bd2bc]/60"
 	on:click={() => (open = true)}
 	aria-haspopup="dialog"
 	aria-expanded={open}
@@ -66,7 +66,7 @@
 	<div class="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-8" aria-live="polite">
 		<button
 			type="button"
-			class="absolute inset-0 h-full w-full bg-black/75 backdrop-blur-[2px]"
+			class="absolute inset-0 h-full w-full bg-black/75"
 			on:click={() => (open = false)}
 			aria-label="Close Verification Center"
 		></button>
