@@ -71,9 +71,9 @@
 </button>
 
 {#if open}
-	<div class="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-8" aria-live="polite">
-		<button type="button" class="absolute inset-0 h-full w-full bg-black/75" on:click={() => (open = false)} aria-label="Close Verification Center"></button>
-		<aside class="verification-modal relative max-h-full w-full max-w-[720px] overflow-y-auto rounded-2xl border border-[#3a424e] bg-[#202224] text-[#edf0f5] shadow-2xl shadow-black/70" role="dialog" aria-modal="true" aria-labelledby="verification-center-title">
+	<div class="fixed inset-0 z-[70]" aria-live="polite">
+		<button type="button" class="absolute inset-0 h-full w-full bg-black/55" on:click={() => (open = false)} aria-label="Close Verification Center"></button>
+		<aside class="verification-center-drawer verification-modal absolute inset-y-0 right-0 flex h-dvh w-full max-w-[480px] flex-col overflow-y-auto border-l border-[#3a424e] bg-[#202224] text-[#edf0f5] shadow-2xl shadow-black/70" role="dialog" aria-modal="true" aria-labelledby="verification-center-title">
 			<header class="flex items-start justify-between gap-5 border-b border-[#343a44] px-6 py-5 sm:px-7">
 				<div>
 					<p class="text-[0.625rem] font-medium tracking-[0.15em] text-[#b9d5c8]">ADVERSERIAL AI · CONFIDENTIAL RUNTIME</p>
@@ -83,7 +83,7 @@
 				<button type="button" class="flex size-8 shrink-0 items-center justify-center rounded-md text-lg text-[#a7b1c0] transition hover:bg-white/[0.06] hover:text-white" on:click={() => (open = false)} aria-label="Close Verification Center">×</button>
 			</header>
 
-			<div class="px-6 pb-6 pt-5 sm:px-7 sm:pb-7">
+			<div class="flex-1 px-6 pb-6 pt-5 sm:px-7 sm:pb-7">
 				<section class="summary-card">
 					<p class="text-sm leading-6 text-[#e5ebf2]">
 						{#if verified}
@@ -162,6 +162,7 @@
 {/if}
 
 <style>
+	.verification-center-drawer { border-radius: 0; }
 	.verification-modal { background-image: linear-gradient(rgb(255 255 255 / 0.012) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.012) 1px, transparent 1px); background-size: 18px 18px; }
 	.summary-card { border: 1px solid #3a424e; border-radius: 0.75rem; background: rgb(40 46 56 / 0.72); padding: 1rem; }
 	.verification-module { overflow: hidden; border: 1px solid #343a44; border-radius: 0.75rem; background: #282e38; }
