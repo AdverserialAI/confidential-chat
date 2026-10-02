@@ -49,6 +49,7 @@
 	import AccountPending from '$lib/components/layout/Overlay/AccountPending.svelte';
 	import UpdateInfoToast from '$lib/components/layout/UpdateInfoToast.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
+	import VerificationCenter from '$lib/components/chat/VerificationCenter.svelte';
 	import { loadKeybindings, matchKeybinding, Shortcut } from '$lib/shortcuts';
 
 	const i18n = getContext('i18n');
@@ -547,6 +548,7 @@
 				{/if}
 			{/if}
 		</div>
+		<VerificationCenter />
 	</div>
 {/if}
 
