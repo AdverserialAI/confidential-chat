@@ -2,7 +2,11 @@
   "version": 1,
   "api_base_url": "https://cc-api.adverserial.ai/v1",
   "attestation_url": "https://cc-api.adverserial.ai/attestation",
+  "billing_base_url": "https://billing.adverserial.ai",
   "policy_url": "https://verify.adverserial.ai/policies/production.json",
+  "receipt_issuer": "https://verify.adverserial.ai",
+  "receipt_audience": "cc-chat.adverserial.ai",
+  "max_output_tokens": 65536,
   "models": [
     { "id": "lordx64/cyberglm", "label": "CyberGLM" },
     { "id": "lordx64/cyberkimi", "label": "CyberKimi" }

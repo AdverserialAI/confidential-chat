@@ -13,8 +13,16 @@ volume, dstack socket, billing secret, or server-side prompt handling.
 - The client fails closed: it disables prompt submission until an independent
   browser hardware verifier accepts fresh evidence and policy.
 - `window.AdverserialHardwareVerifier` is an explicit integration point for a
-  reviewed browser verifier. It must verify the raw TDX/GPU evidence, policy,
-  TLS binding, and endpoint before returning `{ verified: true, verifier, receipt }`.
+  reviewed browser verifier or signed extension. It must verify the raw TDX/GPU
+  evidence, active policy, TLS binding, and endpoint before returning the
+  attested receipt P-256 public JWK, TLS SPKI hash, attestation-state digest,
+  expiry, and `{ verified: true, verifier }`.
+- A user credential stays in memory only and is sent directly to billing for a
+  one-use, model-scoped entitlement. The chat sends the entitlement—not the
+  raw credential—to `cc-api`. Every non-streaming response must carry a signed
+  `X-Adverserial-Receipt`; the UI verifies its signature plus request hash,
+  response hash, nonce, model, TLS SPKI, and attestation-state binding before
+  showing the completion.
 - `npm run build` creates a content manifest for every emitted asset;
   `npm run verify-dist` verifies it. Release provenance and signatures are
   published by the release workflow.
@@ -32,9 +40,11 @@ npm run build
 npm run verify-dist
 ```
 
-Copy `src/config.example.json` to `src/config.json` for a deployment. Do not
-put API keys, model weights, private addresses, or credentials in this
-repository or static configuration.
+Copy `src/config.example.json` to `src/config.json` for a deployment. The
+static host supplies endpoints and limits only; it must not contain API keys,
+model weights, private addresses, credentials, or an entitlement signing key.
+The browser must be allowed to reach billing, `cc-api`, and `verify` by CSP and
+CORS.
 
 ## Proving a deployed bundle
 
