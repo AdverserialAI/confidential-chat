@@ -1,0 +1,13 @@
+{
+  "name": "@adverserial/confidential-chat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static, fail-closed confidential inference chat client",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "verify-dist": "node scripts/verify-dist.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Adverserial Confidential Chat</title>
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+  <main class="shell">
+    <header><strong>ADVERSERIAL AI</strong><span>CONFIDENTIAL CHAT</span><span id="trust" class="state pending">Verification required</span></header>
+    <section class="hero"><p class="eyebrow">CONFIDENTIAL INFERENCE</p><h1>Verify before you send.</h1><p id="summary">This client has not verified a confidential runtime.</p><button id="verify" type="button">Verify runtime</button><a id="evidence" target="_blank" rel="noreferrer">View public evidence</a></section>
+    <section class="chat" aria-label="Chat">
+      <div id="messages" aria-live="polite"></div>
+      <form id="composer"><label for="model">Model</label><select id="model"></select><label for="prompt">Message</label><textarea id="prompt" rows="5" placeholder="Verify the runtime before sending a prompt." disabled></textarea><button id="send" type="submit" disabled>Send securely</button></form>
+    </section>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

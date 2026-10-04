@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "api_base_url": "https://cc-api.adverserial.ai/v1",
+  "attestation_url": "https://cc-api.adverserial.ai/attestation",
+  "policy_url": "https://verify.adverserial.ai/policies/production.json",
+  "models": [
+    { "id": "lordx64/cyberglm", "label": "CyberGLM" },
+    { "id": "lordx64/cyberkimi", "label": "CyberKimi" }
+  ]
+}
