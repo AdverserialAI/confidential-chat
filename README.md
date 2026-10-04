@@ -1,5 +1,7 @@
 # Adverserial confidential chat
 
+> This project is based on [Open WebUI](https://github.com/open-webui/open-webui). It is an independent Adverserial AI derivative and is not affiliated with or endorsed by Open WebUI.
+
 A static, externally hosted chat client for Adverserial confidential inference.
 It is intentionally **not** served by the inference CVM and has no model
 volume, dstack socket, billing secret, or server-side prompt handling.
