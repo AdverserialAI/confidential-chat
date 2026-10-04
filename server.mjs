@@ -31,6 +31,11 @@ http.createServer(async (req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   if (pathname === '/healthz') { res.writeHead(200, { 'cache-control': 'no-store', 'content-type': 'text/plain' }); return res.end('ok\\n'); }
   if (pathname === '/config.json') { res.writeHead(200, { ...headers('application/json; charset=utf-8'), 'cache-control': 'no-store' }); return res.end(config); }
+  if (pathname === '/.well-known/adverserial-build.json') {
+    const body = await readFile(join(root, 'build-info.json'));
+    res.writeHead(200, { ...headers('application/json; charset=utf-8'), 'cache-control': 'no-store' });
+    return res.end(body);
+  }
   const requested = pathname === '/' ? 'index.html' : normalize(pathname).replace(/^[/\\\\]+/, '');
   const file = join(root, requested);
   if (!file.startsWith(root)) { res.writeHead(400).end(); return; }

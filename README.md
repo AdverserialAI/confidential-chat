@@ -33,3 +33,18 @@ npm run verify-dist
 Copy `src/config.example.json` to `src/config.json` for a deployment. Do not
 put API keys, model weights, private addresses, or credentials in this
 repository or static configuration.
+
+## Proving a deployed bundle
+
+Each build emits `build-info.json`, also served at
+`/.well-known/adverserial-build.json`. It names the public source commit and
+the SHA-256 of the full asset-integrity manifest. A release workflow publishes
+the matching archive with GitHub artifact attestation. A native SDK or signed
+browser extension can fetch this record, validate the GitHub provenance, then
+hash every loaded asset before it trusts the UI. A normal browser page cannot
+establish this bootstrap trust by itself; it has already executed its first
+JavaScript before it can perform the check.
+
+## Security
+
+Please report security vulnerabilities privately to [security@adverserial.ai](mailto:security@adverserial.ai). Do not open a public issue for a suspected vulnerability.
