@@ -11,5 +11,5 @@
     "start": "node server.mjs",
     "heroku-postbuild": "npm run build && npm run verify-dist"
   },
-  "engines": { "node": ">=20" }
+  "engines": { "node": "24.x" }
 }
