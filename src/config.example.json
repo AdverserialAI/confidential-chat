@@ -8,7 +8,6 @@
   "receipt_audience": "cc-chat.adverserial.ai",
   "max_output_tokens": 65536,
   "models": [
-    { "id": "lordx64/cyberglm", "label": "CyberGLM" },
-    { "id": "lordx64/cyberkimi", "label": "CyberKimi" }
+    { "id": "lordx64/cyberglm", "label": "CyberGLM" }
   ]
 }

@@ -6,6 +6,12 @@ import { extname, join, normalize } from 'node:path';
 const root = join(new URL('.', import.meta.url).pathname, 'dist');
 const port = Number(process.env.PORT || 8080);
 const mime = { '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.wasm': 'application/wasm' };
+const defaultModels = [{ id: 'lordx64/cyberglm', label: 'CyberGLM' }];
+let configuredModels = defaultModels;
+if (process.env.CC_MODELS_JSON) {
+  try { const candidate = JSON.parse(process.env.CC_MODELS_JSON); if (Array.isArray(candidate) && candidate.every((m) => m && typeof m.id === 'string' && /^[a-z0-9][a-z0-9._-]{0,127}\/[a-z0-9][a-z0-9._-]{0,127}$/.test(m.id))) configuredModels = candidate; else throw new Error('invalid model list'); }
+  catch { throw new Error('CC_MODELS_JSON must be a JSON array of canonical model IDs'); }
+}
 const config = JSON.stringify({
   version: 1,
   api_base_url: process.env.CC_API_BASE_URL || 'https://cc-api.adverserial.ai/v1',
@@ -15,10 +21,7 @@ const config = JSON.stringify({
   receipt_issuer: process.env.CC_RECEIPT_ISSUER || 'https://verify.adverserial.ai',
   receipt_audience: process.env.CC_RECEIPT_AUDIENCE || 'cc-chat.adverserial.ai',
   max_output_tokens: Number(process.env.CC_MAX_OUTPUT_TOKENS || '65536'),
-  models: [
-    { id: 'lordx64/cyberglm', label: 'CyberGLM' },
-    { id: 'lordx64/cyberkimi', label: 'CyberKimi' }
-  ]
+  models: configuredModels
 });
 function headers(type) {
   return {
