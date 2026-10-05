@@ -1,3 +1,9 @@
+# Adverserial confidential chat
+
+This is Adverserial AI's confidential-inference fork of Open WebUI. It retains the complete upstream [Open WebUI License](./LICENSE), including its deployment and branding conditions. See [UPSTREAM.md](./UPSTREAM.md), the [confidential architecture](./docs/CONFIDENTIAL_INFERENCE_ARCHITECTURE.md), and [responsible disclosure](mailto:security@adverserial.ai).
+
+---
+
 # Open WebUI 👋
 
 ![GitHub stars](https://img.shields.io/github/stars/open-webui/open-webui?style=social)
