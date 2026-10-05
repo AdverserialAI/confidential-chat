@@ -61,3 +61,5 @@ JavaScript before it can perform the check.
 ## Security
 
 Please report security vulnerabilities privately to [security@adverserial.ai](mailto:security@adverserial.ai). Do not open a public issue for a suspected vulnerability.
+
+Build provenance is generated from the immutable deployment commit supplied at build time; the browser verifies the bundled SDK against its committed source hash.
