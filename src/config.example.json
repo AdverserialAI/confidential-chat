@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "api_base_url": "https://cc-api.adverserial.ai/v1",
-  "attestation_url": "https://cc-api.adverserial.ai/attestation",
+  "api_base_url": "https://api.adverserial.ai/v1",
+  "attestation_url": "https://api.adverserial.ai/attestation",
   "billing_base_url": "https://billing.adverserial.ai",
   "policy_url": "https://verify.adverserial.ai/policies/production.json",
   "receipt_issuer": "https://verify.adverserial.ai",
-  "receipt_audience": "https://cc-chat.adverserial.ai",
+  "receipt_audience": "https://chat.adverserial.ai",
   "max_output_tokens": 65536,
   "models": [
     { "id": "lordx64/cyberglm", "label": "CyberGLM" }

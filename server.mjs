@@ -14,12 +14,12 @@ if (process.env.CC_MODELS_JSON) {
 }
 const config = JSON.stringify({
   version: 1,
-  api_base_url: process.env.CC_API_BASE_URL || 'https://cc-api.adverserial.ai/v1',
-  attestation_url: process.env.CC_ATTESTATION_URL || 'https://cc-api.adverserial.ai/attestation',
+  api_base_url: process.env.CC_API_BASE_URL || 'https://api.adverserial.ai/v1',
+  attestation_url: process.env.CC_ATTESTATION_URL || 'https://api.adverserial.ai/attestation',
   policy_url: process.env.CC_POLICY_URL || 'https://verify.adverserial.ai/policies/production.json',
   billing_base_url: process.env.CC_BILLING_BASE_URL || 'https://billing.adverserial.ai',
   receipt_issuer: process.env.CC_RECEIPT_ISSUER || 'https://verify.adverserial.ai',
-  receipt_audience: process.env.CC_RECEIPT_AUDIENCE || 'https://cc-chat.adverserial.ai',
+  receipt_audience: process.env.CC_RECEIPT_AUDIENCE || 'https://chat.adverserial.ai',
   max_output_tokens: Number(process.env.CC_MAX_OUTPUT_TOKENS || '65536'),
   models: configuredModels
 });
@@ -27,7 +27,7 @@ function headers(type) {
   return {
     'content-type': type,
     'cache-control': 'public, max-age=31536000, immutable',
-    'content-security-policy': "default-src 'self'; connect-src 'self' https://cc-api.adverserial.ai https://verify.adverserial.ai https://billing.adverserial.ai; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+    'content-security-policy': "default-src 'self'; connect-src 'self' https://api.adverserial.ai https://verify.adverserial.ai https://billing.adverserial.ai; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
     'cross-origin-opener-policy': 'same-origin',
     'referrer-policy': 'no-referrer',
     'x-content-type-options': 'nosniff',
