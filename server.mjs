@@ -27,7 +27,10 @@ function headers(type) {
   return {
     'content-type': type,
     'cache-control': 'public, max-age=31536000, immutable',
-    'content-security-policy': "default-src 'self'; connect-src 'self' https://api.adverserial.ai https://verify.adverserial.ai https://billing.adverserial.ai; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+    // Browser-side verification needs only these pinned public trust sources in
+    // addition to Adverserial services: Phala PCCS supplies Intel TDX collateral
+    // and NVIDIA NRAS supplies the public keys for signed GPU EATs.
+    'content-security-policy': "default-src 'self'; connect-src 'self' https://api.adverserial.ai https://verify.adverserial.ai https://billing.adverserial.ai https://pccs.phala.network https://nras.attestation.nvidia.com; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
     'cross-origin-opener-policy': 'same-origin',
     'referrer-policy': 'no-referrer',
     'x-content-type-options': 'nosniff',

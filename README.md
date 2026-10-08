@@ -43,8 +43,11 @@ npm run verify-dist
 Copy `src/config.example.json` to `src/config.json` for a deployment. The
 static host supplies endpoints and limits only; it must not contain API keys,
 model weights, private addresses, credentials, or an entitlement signing key.
-The browser must be allowed to reach billing, `api`, and `verify` by CSP and
-CORS. Set `CC_MODELS_JSON` to the canonical model IDs contained in the active
+The browser must be allowed to reach billing, `api`, `verify`,
+`https://pccs.phala.network` (Intel TDX collateral), and
+`https://nras.attestation.nvidia.com` (NVIDIA EAT signing keys) by CSP and
+CORS. These are explicit, pinned trust-chain origins—not general network
+access. Set `CC_MODELS_JSON` to the canonical model IDs contained in the active
 endpoint policy; the default exposes only `lordx64/cyberglm`.
 
 ## Proving a deployed bundle
