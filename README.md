@@ -19,7 +19,10 @@ volume, dstack socket, billing secret, or server-side prompt handling.
   expiry, and `{ verified: true, verifier }`.
 - A user credential stays in memory only and is sent directly to billing for a
   one-use, model-scoped entitlement. The chat sends the entitlement—not the
-  raw credential—to `api.adverserial.ai`. Every non-streaming response must carry a signed
+  raw credential—to a same-origin ciphertext relay. The relay permits only an
+  EHBP-encrypted completion request to the configured attested endpoint and
+  never has an EHBP private key, so it cannot decrypt prompts or completions.
+  Every non-streaming response must carry a signed
   `X-Adverserial-Receipt`; the UI verifies its signature plus request hash,
   response hash, nonce, model, TLS SPKI, and attestation-state binding before
   showing the completion.

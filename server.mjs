@@ -1,6 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { access, readFile } from 'node:fs/promises';
 import http from 'node:http';
+import https from 'node:https';
 import { extname, join, normalize } from 'node:path';
 
 const root = join(new URL('.', import.meta.url).pathname, 'dist');
@@ -23,6 +24,22 @@ const config = JSON.stringify({
   max_output_tokens: Number(process.env.CC_MAX_OUTPUT_TOKENS || '65536'),
   models: configuredModels
 });
+const apiBaseURL = new URL(process.env.CC_API_BASE_URL || 'https://api.adverserial.ai/v1');
+if (apiBaseURL.protocol !== 'https:' || apiBaseURL.pathname.replace(/\/$/, '') !== '/v1') throw new Error('CC_API_BASE_URL must be an HTTPS /v1 endpoint');
+const relayPrefix = '/confidential-relay';
+const forwardedRequestHeaders = new Set([
+  'accept',
+  'authorization',
+  'content-type',
+  'ehbp-encapsulated-key',
+  'x-adverserial-nonce'
+]);
+const forwardedResponseHeaders = new Set([
+  'content-type',
+  'ehbp-response-nonce',
+  'x-adverserial-receipt',
+  'content-length'
+]);
 function headers(type, cacheControl = 'no-cache, max-age=0, must-revalidate') {
   return {
     'content-type': type,
@@ -39,8 +56,48 @@ function headers(type, cacheControl = 'no-cache, max-age=0, must-revalidate') {
     'permissions-policy': 'camera=(), microphone=(), geolocation=()'
   };
 }
+function relayHeaders(headers) {
+  const selected = {};
+  for (const [name, value] of Object.entries(headers)) {
+    if (forwardedRequestHeaders.has(name.toLowerCase()) && typeof value === 'string') selected[name] = value;
+  }
+  return selected;
+}
+function relayResponseHeaders(headers) {
+  const selected = { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
+  for (const [name, value] of Object.entries(headers)) {
+    if (forwardedResponseHeaders.has(name.toLowerCase()) && typeof value === 'string') selected[name] = value;
+  }
+  return selected;
+}
+function relayToAttestedAPI(req, res, pathname) {
+  const suffix = pathname.slice(relayPrefix.length);
+  if (req.method !== 'POST' || suffix !== '/chat/completions' || typeof req.headers['ehbp-encapsulated-key'] !== 'string') {
+    res.writeHead(404, { 'cache-control': 'no-store', 'content-type': 'text/plain; charset=utf-8' });
+    res.end('not found\n');
+    return;
+  }
+  const upstream = https.request({
+    protocol: apiBaseURL.protocol,
+    hostname: apiBaseURL.hostname,
+    port: apiBaseURL.port || 443,
+    method: 'POST',
+    path: `${apiBaseURL.pathname.replace(/\/$/, '')}${suffix}`,
+    headers: relayHeaders(req.headers),
+    rejectUnauthorized: true
+  }, (upstreamResponse) => {
+    res.writeHead(upstreamResponse.statusCode || 502, relayResponseHeaders(upstreamResponse.headers));
+    upstreamResponse.pipe(res);
+  });
+  upstream.on('error', () => {
+    if (!res.headersSent) res.writeHead(502, { 'cache-control': 'no-store', 'content-type': 'application/json' });
+    res.end('{"error":"confidential endpoint unavailable"}');
+  });
+  req.pipe(upstream);
+}
 http.createServer(async (req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
+  if (pathname.startsWith(`${relayPrefix}/`)) return relayToAttestedAPI(req, res, pathname);
   if (pathname === '/healthz') { res.writeHead(200, { 'cache-control': 'no-store', 'content-type': 'text/plain' }); return res.end('ok\\n'); }
   if (pathname === '/config.json') { res.writeHead(200, { ...headers('application/json; charset=utf-8'), 'cache-control': 'no-store' }); return res.end(config); }
   if (pathname === '/.well-known/adverserial-build.json') {

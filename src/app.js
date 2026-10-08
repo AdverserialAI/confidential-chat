@@ -1,7 +1,8 @@
 /*
  * No message, API key, or conversation is persisted by this client. The browser
  * obtains a one-use entitlement from billing, then the quote-bound EHBP
- * receiver encrypts every request directly to the attested CVM.
+ * receiver encrypts every request to the attested CVM. The same-origin relay
+ * forwards ciphertext only; it has neither an API key nor an EHBP private key.
  */
 const state = { config: null, policy: null, proof: null, client: null, verificationOptions: null };
 const $ = (id) => document.getElementById(id);
@@ -9,6 +10,21 @@ const trust = $('trust'); const summary = $('summary'); const prompt = $('prompt
 const canonicalModelID = (value) => /^[a-z0-9][a-z0-9._-]{0,127}\/[a-z0-9][a-z0-9._-]{0,127}$/.test(value);
 const base64UrlNonce = () => { const bytes = crypto.getRandomValues(new Uint8Array(32)); let out = ''; for (const byte of bytes) out += String.fromCharCode(byte); return btoa(out).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/u, ''); };
 const isRecord = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
+async function confidentialRelayFetch(input, init) {
+  const request = input instanceof Request ? input : new Request(input, init);
+  const target = new URL(request.url);
+  const endpoint = endpointOrigin(state.config.api_base_url);
+  if (target.origin !== endpoint || !target.pathname.startsWith('/v1/')) return fetch(request);
+  const relay = new URL(`/confidential-relay${target.pathname.slice('/v1'.length)}${target.search}`, window.location.origin);
+  return fetch(relay, {
+    method: request.method,
+    credentials: 'omit',
+    cache: 'no-store',
+    headers: request.headers,
+    body: request.body,
+    duplex: request.body ? 'half' : undefined
+  });
+}
 function setTrust(kind, text) { trust.className = `state ${kind}`; trust.textContent = text; }
 function addMessage(role, text) { const item=document.createElement('article'); item.className='message'; const who=document.createElement('b'); who.textContent=role; item.append(who, document.createElement('br'), document.createTextNode(text)); $('messages').append(item); }
 function disablePrompt(reason) { state.proof = null; state.client = null; state.verificationOptions = null; prompt.disabled = true; send.disabled = true; setTrust('failed', 'Verification required'); summary.textContent = reason; }
@@ -56,7 +72,7 @@ async function verify() {
       attestationUrl: state.config.attestation_url,
       verifyHardwareEvidence: library.createPhalaNVIDIAVerifier({ minimumGPUCount })
     };
-    const client = await library.createVerifiedOpenAI(verificationOptions);
+    const client = await library.createVerifiedOpenAI({...verificationOptions, fetchImpl: confidentialRelayFetch});
     if (!client.verified || !client.proof) throw new Error(client.reason || 'The independent hardware verifier did not accept the runtime evidence.');
     state.client = client; state.proof = client.proof; state.policy = policy; state.verificationOptions = verificationOptions;
     setTrust('verified', `Verified: ${client.proof.hardwareVerifier}`);
