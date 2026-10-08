@@ -23,10 +23,12 @@ const config = JSON.stringify({
   max_output_tokens: Number(process.env.CC_MAX_OUTPUT_TOKENS || '65536'),
   models: configuredModels
 });
-function headers(type) {
+function headers(type, cacheControl = 'no-cache, max-age=0, must-revalidate') {
   return {
     'content-type': type,
-    'cache-control': 'public, max-age=31536000, immutable',
+    // The chat bundle is security-sensitive and its filenames are stable.
+    // Always revalidate so a client cannot remain on a superseded verifier.
+    'cache-control': cacheControl,
     // Browser-side verification needs only these pinned public trust sources in
     // addition to Adverserial services: Phala PCCS supplies Intel TDX collateral
     // and NVIDIA NRAS supplies the public keys for signed GPU EATs.
