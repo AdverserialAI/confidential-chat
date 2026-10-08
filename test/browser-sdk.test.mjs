@@ -20,4 +20,5 @@ test('chat client has no plaintext confidential request fallback', async () => {
   assert.match(app, /active public policy/);
   assert.doesNotMatch(app, /AdverserialHardwareVerifier/);
   assert.doesNotMatch(app, /token\.value=''/);
+  assert.match(app, /trustedReceiptKeys:state\.policy\.receipt_keys/);
 });
