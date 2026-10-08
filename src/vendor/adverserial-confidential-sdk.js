@@ -32799,7 +32799,20 @@ ${pckCertChain}`;
       return innerFetch(request);
     }
     const identity = await Identity.unmarshalPublicConfig(proof.ehbpKeyConfig);
-    return new Transport(identity, new URL(request.url).host).request(request);
+    const transport = new Transport(identity, new URL(request.url).host);
+    if (innerFetch === fetch) return transport.request(request);
+    const original = globalThis.fetch;
+    const host = new URL(request.url).host;
+    globalThis.fetch = ((inner, innerInit) => {
+      const innerURL = typeof inner === "string" ? inner : inner instanceof URL ? inner.href : inner.url;
+      if (new URL(innerURL).host === host) return innerFetch(inner, innerInit);
+      return original(inner, innerInit);
+    });
+    try {
+      return await transport.request(request);
+    } finally {
+      globalThis.fetch = original;
+    }
   };
   var fetchForProof = (proof, reason, innerFetch, entitlement) => {
     return (async (input, init) => {
