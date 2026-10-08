@@ -93,7 +93,7 @@ $('composer').addEventListener('submit', async (event) => {
     const receipt=response.headers.get('x-adverserial-receipt');
     const library = sdk();
     await library.verifyInferenceReceipt({receipt,receiptPublicKey:state.proof.receiptPublicKey,issuer:state.config.receipt_issuer,audience:state.config.receipt_audience,modelId:model,requestNonce:nonce,requestBody:body,responseBody,tlsSpkiSha256:state.proof.tlsSpkiSha256,attestationStateDigest:state.proof.attestationStateDigest});
-    addMessage('YOU',text); prompt.value=''; token.value=''; addMessage('MODEL',JSON.parse(responseBody).choices?.[0]?.message?.content || 'No completion returned.');
+    addMessage('YOU',text); prompt.value=''; addMessage('MODEL',JSON.parse(responseBody).choices?.[0]?.message?.content || 'No completion returned.');
   } catch(error) { addMessage('SYSTEM',error instanceof Error ? error.message : 'Request failed.'); }
   finally { send.disabled = !state.proof || state.proof.expiresEpoch <= Date.now()/1000; }
 });
