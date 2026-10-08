@@ -32801,26 +32801,31 @@ ${pckCertChain}`;
     const identity = await Identity.unmarshalPublicConfig(proof.ehbpKeyConfig);
     return new Transport(identity, new URL(request.url).host).request(request);
   };
+  var fetchForProof = (proof, reason, innerFetch, entitlement) => {
+    return (async (input, init) => {
+      if (!proof) throw new VerificationRequiredError(reason ?? "verification failed");
+      if (proof.expiresEpoch <= Date.now() / 1e3) throw new VerificationRequiredError("the verified confidential proof has expired");
+      const headers = new Headers(init?.headers);
+      headers.delete("Authorization");
+      if (!entitlement) throw new VerificationRequiredError("a short-lived confidential entitlement is required");
+      headers.set("Authorization", `Bearer ${entitlement}`);
+      const requestInit = { ...init, headers };
+      return proof.ehbpKeyConfig ? encryptedFetch(proof, innerFetch, input, requestInit) : innerFetch(input, requestInit);
+    });
+  };
   var createVerifiedOpenAI = async (options) => {
     const result = await verifyEndpoint(options.baseURL, options);
     const proof = result.status === "verified" ? result.proof : null;
     const reason = result.status === "failed" ? result.reason : null;
     const innerFetch = options.fetchImpl ?? fetch;
-    const fetchImpl = (async (input, init) => {
-      if (!proof) throw new VerificationRequiredError(reason ?? "verification failed");
-      const headers = new Headers(init?.headers);
-      headers.delete("Authorization");
-      if (!options.entitlement) throw new VerificationRequiredError("a short-lived confidential entitlement is required");
-      headers.set("Authorization", `Bearer ${options.entitlement}`);
-      const requestInit = { ...init, headers };
-      return proof.ehbpKeyConfig ? encryptedFetch(proof, innerFetch, input, requestInit) : innerFetch(input, requestInit);
-    });
+    const fetchWithEntitlement = (entitlement) => fetchForProof(proof, reason, innerFetch, entitlement);
     return {
       verified: proof !== null,
       proof,
       reason,
       baseURL: options.baseURL,
-      fetchImpl
+      fetchImpl: fetchForProof(proof, reason, innerFetch, options.entitlement),
+      fetchWithEntitlement
     };
   };
 

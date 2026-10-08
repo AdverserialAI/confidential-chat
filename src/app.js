@@ -84,14 +84,15 @@ $('composer').addEventListener('submit', async (event) => {
   try {
     const nonce = base64UrlNonce(); const draft = {model,messages:[{role:'user',content:text}],stream:false,max_tokens:state.config.max_output_tokens};
     const accessToken = await credential(); const encodedDraft = JSON.stringify(draft); const grant = await entitlement(accessToken, model, encodedDraft);
-    const library = sdk();
-    const client = await library.createVerifiedOpenAI({ ...state.verificationOptions, entitlement: grant.entitlement });
-    if (!client.verified || !client.proof) throw new Error(client.reason || 'The verification proof could not be refreshed.');
+    // Bind the one-use entitlement to the proof this browser already verified.
+    // Re-verifying after billing can consume an entitlement on a transient trust-source
+    // fetch failure without ever attempting the encrypted request.
     const body = JSON.stringify({...draft,max_tokens:grant.max_output_tokens});
-    const response=await client.fetchImpl(`${state.config.api_base_url}/chat/completions`, {method:'POST',credentials:'omit',headers:{'content-type':'application/json','x-adverserial-nonce':nonce},body});
+    const response=await state.client.fetchWithEntitlement(grant.entitlement)(`${state.config.api_base_url}/chat/completions`, {method:'POST',credentials:'omit',headers:{'content-type':'application/json','x-adverserial-nonce':nonce},body});
     const responseBody=await response.text(); if (!response.ok) throw new Error(`Confidential API request failed (${response.status}).`);
     const receipt=response.headers.get('x-adverserial-receipt');
-    await library.verifyInferenceReceipt({receipt,receiptPublicKey:client.proof.receiptPublicKey,issuer:state.config.receipt_issuer,audience:state.config.receipt_audience,modelId:model,requestNonce:nonce,requestBody:body,responseBody,tlsSpkiSha256:client.proof.tlsSpkiSha256,attestationStateDigest:client.proof.attestationStateDigest});
+    const library = sdk();
+    await library.verifyInferenceReceipt({receipt,receiptPublicKey:state.proof.receiptPublicKey,issuer:state.config.receipt_issuer,audience:state.config.receipt_audience,modelId:model,requestNonce:nonce,requestBody:body,responseBody,tlsSpkiSha256:state.proof.tlsSpkiSha256,attestationStateDigest:state.proof.attestationStateDigest});
     addMessage('YOU',text); prompt.value=''; token.value=''; addMessage('MODEL',JSON.parse(responseBody).choices?.[0]?.message?.content || 'No completion returned.');
   } catch(error) { addMessage('SYSTEM',error instanceof Error ? error.message : 'Request failed.'); }
   finally { send.disabled = !state.proof || state.proof.expiresEpoch <= Date.now()/1000; }
