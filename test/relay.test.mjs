@@ -13,5 +13,9 @@ test('same-origin relay is constrained to encrypted confidential completions', a
   assert.match(server, /hostname: apiBaseURL\.hostname/);
   assert.match(server, /rejectUnauthorized: true/);
   assert.match(server, /const forwardedRequestHeaders = new Set/);
+  assert.match(server, /const maxRelayBodyBytes = 9 \* 1024 \* 1024/);
+  assert.match(server, /const maxRelayRequests = 16/);
+  assert.match(server, /encrypted request upload timed out/);
+  assert.match(server, /bodyLimiter/);
   assert.doesNotMatch(server, /console\.log\(.*req/);
 });
