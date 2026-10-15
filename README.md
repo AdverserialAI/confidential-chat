@@ -69,3 +69,10 @@ JavaScript before it can perform the check.
 Please report security vulnerabilities privately to [security@adverserial.ai](mailto:security@adverserial.ai). Do not open a public issue for a suspected vulnerability.
 
 Build provenance is generated from the immutable deployment commit supplied at build time; the browser verifies the bundled SDK against its committed source hash.
+
+## Licensing
+
+This repository retains the upstream Open WebUI license and attribution in
+[`LICENSE`](./LICENSE). Adverserial does not grant rights beyond the rights
+already supplied by that upstream license. Third-party material, where present,
+remains under its own terms.
