@@ -55,6 +55,17 @@ function post(port, body) {
 	});
 }
 
+function get(port, path) {
+	return new Promise((resolve, reject) => {
+		http.get({ hostname: '127.0.0.1', port, path }, (res) => {
+			let data = '';
+			res.setEncoding('utf8');
+			res.on('data', (chunk) => { data += chunk; });
+			res.on('end', () => resolve({ status: res.statusCode, data }));
+		}).once('error', reject);
+	});
+}
+
 function rejectedSlowUpload(port) {
 	return new Promise((resolve, reject) => {
 		const socket = net.connect(port, '127.0.0.1');
@@ -112,4 +123,24 @@ test('relay closes rejected slow uploads instead of retaining a keep-alive body'
 	const response = await rejectedSlowUpload(port);
 	assert.match(response, /^HTTP\/1\.1 404 /);
 	assert.match(response.toLowerCase(), /\r\nconnection: close\r\n/);
+});
+
+test('static directory request cannot terminate the public chat server', async (t) => {
+	let port;
+	let child;
+	try {
+		port = await freePort();
+		child = await startChat(port);
+	} catch (error) {
+		if (error?.code === 'EPERM') {
+			t.skip('local listener creation is blocked by the sandbox');
+			return;
+		}
+		throw error;
+	}
+	t.after(() => child.kill('SIGTERM'));
+	const response = await get(port, '/vendor');
+	assert.equal(response.status, 404);
+	await new Promise((resolve) => setTimeout(resolve, 50));
+	assert.equal(child.exitCode, null);
 });

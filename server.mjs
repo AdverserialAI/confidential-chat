@@ -1,5 +1,5 @@
 import { createReadStream } from 'node:fs';
-import { access, readFile } from 'node:fs/promises';
+import { access, readFile, stat } from 'node:fs/promises';
 import http from 'node:http';
 import https from 'node:https';
 import { extname, join, normalize } from 'node:path';
@@ -188,7 +188,21 @@ const server = http.createServer(async (req, res) => {
   const requested = pathname === '/' ? 'index.html' : normalize(pathname).replace(/^[/\\\\]+/, '');
   const file = join(root, requested);
   if (!file.startsWith(root)) { res.writeHead(400).end(); return; }
-  try { await access(file); res.writeHead(200, headers(mime[extname(file)] || 'application/octet-stream')); createReadStream(file).pipe(res); }
+  try {
+    await access(file);
+    // `access()` succeeds for directories. Passing one to createReadStream()
+    // emits EISDIR asynchronously; without an error listener Node treats that
+    // as an uncaught error and a single public GET can terminate the process.
+    // Only serve regular files and keep a handler for an open/read race.
+    if (!(await stat(file)).isFile()) throw new Error('not a regular file');
+    const stream = createReadStream(file);
+    stream.once('error', () => {
+      if (!res.headersSent) res.writeHead(500, { 'cache-control': 'no-store', 'content-type': 'text/plain; charset=utf-8', 'x-content-type-options': 'nosniff' });
+      res.end('internal server error\\n');
+    });
+    res.writeHead(200, headers(mime[extname(file)] || 'application/octet-stream'));
+    stream.pipe(res);
+  }
   catch { res.writeHead(404, { 'cache-control': 'no-store', 'content-type': 'text/plain' }); res.end('not found\\n'); }
 });
 // These apply only to client request headers/body. Inference response streams
