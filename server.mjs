@@ -82,15 +82,18 @@ function relayResponseHeaders(headers) {
 
 function relayError(res, status, message) {
   if (res.headersSent || res.writableEnded) return;
-  res.writeHead(status, { 'cache-control': 'no-store', 'content-type': 'application/json; charset=utf-8', 'x-content-type-options': 'nosniff' });
+  // A rejected relay request must not remain a keep-alive slow-upload socket.
+  // The request may have no Content-Length, so leaving it open would bypass the
+  // admission counter until the HTTP server timeout expires.
+  res.shouldKeepAlive = false;
+  res.writeHead(status, { 'cache-control': 'no-store', 'connection': 'close', 'content-type': 'application/json; charset=utf-8', 'x-content-type-options': 'nosniff' });
   res.end(JSON.stringify({ error: message }));
 }
 
 function relayToAttestedAPI(req, res, pathname) {
   const suffix = pathname.slice(relayPrefix.length);
   if (req.method !== 'POST' || suffix !== '/chat/completions' || typeof req.headers['ehbp-encapsulated-key'] !== 'string') {
-    res.writeHead(404, { 'cache-control': 'no-store', 'content-type': 'text/plain; charset=utf-8' });
-    res.end('not found\n');
+    relayError(res, 404, 'not found');
     return;
   }
   const declaredLength = req.headers['content-length'];

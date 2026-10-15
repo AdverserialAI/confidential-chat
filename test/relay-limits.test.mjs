@@ -55,6 +55,24 @@ function post(port, body) {
 	});
 }
 
+function rejectedSlowUpload(port) {
+	return new Promise((resolve, reject) => {
+		const socket = net.connect(port, '127.0.0.1');
+		let response = '';
+		const timeout = setTimeout(() => {
+			socket.destroy();
+			reject(new Error('rejected upload socket did not close promptly'));
+		}, 1_000);
+		timeout.unref();
+		socket.once('connect', () => {
+			socket.write('POST /confidential-relay/chat/completions HTTP/1.1\r\nHost: 127.0.0.1\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\nConnection: keep-alive\r\n\r\n5\r\nhello\r\n');
+		});
+		socket.on('data', (chunk) => { response += chunk; });
+		socket.once('error', (error) => { clearTimeout(timeout); reject(error); });
+		socket.once('close', () => { clearTimeout(timeout); resolve(response); });
+	});
+}
+
 test('relay rejects an oversized encrypted request before opening an upstream request', async (t) => {
 	let port;
 	let child;
@@ -74,4 +92,24 @@ test('relay rejects an oversized encrypted request before opening an upstream re
 	const response = await post(port, Buffer.alloc(maxRelayBodyBytes + 1));
 	assert.equal(response.status, 413);
 	assert.match(response.data, /encrypted request body too large/);
+});
+
+
+test('relay closes rejected slow uploads instead of retaining a keep-alive body', async (t) => {
+	let port;
+	let child;
+	try {
+		port = await freePort();
+		child = await startChat(port);
+	} catch (error) {
+		if (error?.code === 'EPERM') {
+			t.skip('local listener creation is blocked by the sandbox');
+			return;
+		}
+		throw error;
+	}
+	t.after(() => child.kill('SIGTERM'));
+	const response = await rejectedSlowUpload(port);
+	assert.match(response, /^HTTP\/1\.1 404 /);
+	assert.match(response.toLowerCase(), /\r\nconnection: close\r\n/);
 });
