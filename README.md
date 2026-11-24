@@ -1,5 +1,21 @@
 # Adverserial confidential chat
 
+> **This repository is not the chat that is deployed.**
+> <https://chat.adverserial.ai> is built from
+> **[confidential-open-webui](https://github.com/AdverserialAI/confidential-open-webui)**.
+> This repository is the earlier lightweight static client. It was last changed
+> on 2026-10-15, is not deployed, and is kept for reference. What is out of
+> date here:
+>
+> - It defaults to the model `lordx64/cyberglm`. Production serves
+>   `adverserial/cyberseek`.
+> - It sends ciphertext through a same-origin relay (`server.mjs`). The
+>   deployed chat sends ciphertext from the browser directly to
+>   `api.adverserial.ai`.
+> - No release has ever been tagged, so the release workflow has never run and
+>   there is no published archive, provenance attestation or signature for
+>   this client.
+
 > This project is based on [Open WebUI](https://github.com/open-webui/open-webui). It is an independent Adverserial AI derivative and is not affiliated with or endorsed by Open WebUI.
 
 A static, externally hosted chat client for Adverserial confidential inference.
@@ -8,13 +24,14 @@ volume, dstack socket, billing secret, or server-side prompt handling.
 
 ## Security contract
 
-- Model IDs must be canonical `publisher/model` values, such as
-  `lordx64/cyberglm` and `lordx64/cyberkimi`.
+- Model IDs must be canonical `publisher/model` values. The code and example
+  configuration here use `lordx64/cyberglm`; the model in production is
+  `adverserial/cyberseek`.
 - The client fails closed: it disables prompt submission until an independent
   browser hardware verifier accepts fresh evidence and policy.
 - `window.AdverserialHardwareVerifier` is an explicit integration point for a
   reviewed browser verifier or signed extension. It must verify the raw TDX/GPU
-  evidence, active policy, TLS binding, and endpoint before returning the
+  evidence, published policy, TLS binding, and endpoint before returning the
   attested receipt P-256 public JWK, TLS SPKI hash, attestation-state digest,
   expiry, and `{ verified: true, verifier }`.
 - A user credential stays in memory only and is sent directly to billing for a
@@ -27,14 +44,17 @@ volume, dstack socket, billing secret, or server-side prompt handling.
   response hash, nonce, model, TLS SPKI, and attestation-state binding before
   showing the completion.
 - `npm run build` creates a content manifest for every emitted asset;
-  `npm run verify-dist` verifies it. Release provenance and signatures are
-  published by the release workflow.
+  `npm run verify-dist` verifies it. The release workflow would attach GitHub
+  build provenance to a tagged archive; no tag has been pushed, so none
+  exists.
 - Static delivery is separate from `api.adverserial.ai`, whose TLS endpoint
   and attest-proxy remain inside the CVM.
 
 This repository is not a claim that browser JavaScript alone provides a
-hardware root of trust. For strongest assurance, use the independently
-verifying official SDK or a signed browser extension as the bootstrap.
+hardware root of trust. For stronger assurance, bootstrap from a locally
+installed client such as
+[ACK](https://github.com/AdverserialAI/adverserial-confidential-kit). There is
+no signed browser extension.
 
 ## Build
 
@@ -57,10 +77,10 @@ endpoint policy; the default exposes only `lordx64/cyberglm`.
 
 Each build emits `build-info.json`, also served at
 `/.well-known/adverserial-build.json`. It names the public source commit and
-the SHA-256 of the full asset-integrity manifest. A release workflow publishes
-the matching archive with GitHub artifact attestation. A native SDK or signed
-browser extension can fetch this record, validate the GitHub provenance, then
-hash every loaded asset before it trusts the UI. A normal browser page cannot
+the SHA-256 of the full asset-integrity manifest. The release workflow is
+written to publish the matching archive with GitHub artifact attestation on a
+version tag; it has not been used. A native client could fetch this record,
+validate the provenance, then hash every loaded asset before it trusts the UI. A normal browser page cannot
 establish this bootstrap trust by itself; it has already executed its first
 JavaScript before it can perform the check.
 
